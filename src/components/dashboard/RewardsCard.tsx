@@ -101,8 +101,29 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 		);
 	}
 
+	// Filter out cycles with no rewards (future/in-progress cycles)
+	const completedCycles = data.cycles.filter(
+		(c) => BigInt(c.totalRewards) > 0 || BigInt(c.missedBakingRewards) > 0 || BigInt(c.missedAttestationRewards) > 0
+	);
+
+	if (completedCycles.length === 0) {
+		return (
+			<Card className="lg:col-span-2">
+				<CardHeader>
+					<CardTitle className="flex items-center gap-2">
+						<TrendingUp className="h-5 w-5" />
+						Rewards History
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p className="text-muted-foreground">No completed reward cycles yet</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	// Prepare chart data (reverse so oldest is first)
-	const chartData = [...data.cycles].reverse().map((cycle) => ({
+	const chartData = [...completedCycles].reverse().map((cycle) => ({
 		cycle: cycle.cycle.toString(),
 		baking: Number(BigInt(cycle.bakingRewards)) / 1_000_000,
 		attestation: Number(BigInt(cycle.attestationRewards)) / 1_000_000,
@@ -112,20 +133,24 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 			1_000_000,
 	}));
 
-	// Calculate stats
+	// Calculate stats (using only completed cycles)
 	const totalEarnedNum = Number(BigInt(data.totalEarned)) / 1_000_000;
 	const totalMissedNum = Number(BigInt(data.totalMissed)) / 1_000_000;
-	const avgPerCycle = totalEarnedNum / data.cycles.length;
-	const efficiency = totalEarnedNum / (totalEarnedNum + totalMissedNum) * 100;
+	const avgPerCycle = completedCycles.length > 0 ? totalEarnedNum / completedCycles.length : 0;
+	const efficiency = (totalEarnedNum + totalMissedNum) > 0
+		? totalEarnedNum / (totalEarnedNum + totalMissedNum) * 100
+		: 100;
 
-	// Calculate trend (compare last 3 cycles avg vs previous cycles avg)
-	const recentCycles = data.cycles.slice(0, 3);
-	const olderCycles = data.cycles.slice(3);
-	const recentAvg = recentCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) / recentCycles.length / 1_000_000;
-	const olderAvg = olderCycles.length > 0
-		? olderCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) / olderCycles.length / 1_000_000
-		: recentAvg;
-	const trendPercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
+	// Calculate trend (compare last 3 completed cycles avg vs previous cycles avg)
+	// Need at least 4 completed cycles to calculate a meaningful trend
+	let trendPercent = 0;
+	if (completedCycles.length >= 4) {
+		const recentCycles = completedCycles.slice(0, 3);
+		const olderCycles = completedCycles.slice(3);
+		const recentAvg = recentCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) / recentCycles.length / 1_000_000;
+		const olderAvg = olderCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) / olderCycles.length / 1_000_000;
+		trendPercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
+	}
 
 	return (
 		<Card className="lg:col-span-2">
@@ -136,7 +161,7 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 							<TrendingUp className="h-5 w-5" />
 							Rewards History
 						</CardTitle>
-						<CardDescription>Last {data.cycles.length} cycles</CardDescription>
+						<CardDescription>Last {completedCycles.length} cycles</CardDescription>
 					</div>
 					<div className="text-right">
 						<p className="text-2xl font-bold">{formatXtzCompact(data.totalEarned)} XTZ</p>
@@ -153,9 +178,9 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 					</div>
 					<div className="text-center">
 						<p className="text-lg font-semibold flex items-center justify-center gap-1">
-							{trendPercent > 1 ? (
+							{trendPercent > 5 ? (
 								<ArrowUp className="h-4 w-4 text-green-500" />
-							) : trendPercent < -1 ? (
+							) : trendPercent < -5 ? (
 								<ArrowDown className="h-4 w-4 text-red-500" />
 							) : (
 								<Minus className="h-4 w-4 text-muted-foreground" />
