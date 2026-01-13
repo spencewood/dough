@@ -1,4 +1,4 @@
-import type { BakerStatus, CycleRewards, RewardsHistory } from "@/lib/types";
+import type { BakerParticipation, BakerStatus, CycleRewards, RewardsHistory } from "@/lib/types";
 
 /** Mock baker address - replace with actual in .env */
 export const MOCK_BAKER_ADDRESS = "tz1YourBakerAddressHereXXXXXXXXXXXXXXX";
@@ -16,6 +16,17 @@ export const mockBakerStatus: BakerStatus = {
 	isDeactivated: false,
 	gracePeriod: 5,
 	stakingCapacityUsed: 75.5,
+	hasPendingDenunciations: false,
+};
+
+/** Mock participation stats for current cycle */
+export const mockBakerParticipation: BakerParticipation = {
+	expectedCycleActivity: 1200,
+	minimalCycleActivity: 960,
+	missedSlots: 3,
+	missedLevels: 1,
+	remainingAllowedMissedSlots: 237,
+	expectedAttestingRewards: "3500000000", // 3.5K XTZ in mutez
 };
 
 /** Mock delegate RPC response (matches Taquito DelegatesResponse shape) */

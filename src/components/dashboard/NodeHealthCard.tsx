@@ -1,4 +1,4 @@
-import { Activity, Clock, Network, Server } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Cpu, HardDrive, Network, Server } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -15,24 +15,22 @@ interface NodeHealthCardProps {
 	isLoading?: boolean;
 }
 
-function formatTimestamp(timestamp: string): string {
-	const date = new Date(timestamp);
-	const now = new Date();
-	const diffMs = now.getTime() - date.getTime();
-	const diffSecs = Math.floor(diffMs / 1000);
-
-	if (diffSecs < 60) {
-		return `${diffSecs}s ago`;
-	}
-	if (diffSecs < 3600) {
-		return `${Math.floor(diffSecs / 60)}m ago`;
-	}
-	return date.toLocaleTimeString();
-}
-
 function truncateHash(hash: string): string {
 	if (hash.length <= 12) return hash;
 	return `${hash.slice(0, 8)}...${hash.slice(-4)}`;
+}
+
+function formatBytes(bytes: number): string {
+	if (bytes >= 1_000_000_000) {
+		return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
+	}
+	if (bytes >= 1_000_000) {
+		return `${(bytes / 1_000_000).toFixed(1)} MB`;
+	}
+	if (bytes >= 1_000) {
+		return `${(bytes / 1_000).toFixed(1)} KB`;
+	}
+	return `${bytes} B`;
 }
 
 export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
@@ -96,27 +94,20 @@ export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
 						</Badge>
 					</div>
 
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2 text-sm text-muted-foreground">
-							<Clock className="h-4 w-4" />
-							Head Block
+					{data.nodeVersion && (
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2 text-sm text-muted-foreground">
+								<HardDrive className="h-4 w-4" />
+								Version
+							</div>
+							<div className="text-right">
+								<p className="font-mono text-sm">{data.nodeVersion}</p>
+								{data.nodeCommit && (
+									<p className="text-xs text-muted-foreground">{data.nodeCommit}</p>
+								)}
+							</div>
 						</div>
-						<div className="text-right">
-							<p className="font-mono text-sm">
-								Level {data.headLevel.toLocaleString()}
-							</p>
-							<p className="text-xs text-muted-foreground">
-								{formatTimestamp(data.headTimestamp)}
-							</p>
-						</div>
-					</div>
-
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2 text-sm text-muted-foreground">
-							<span>Hash</span>
-						</div>
-						<p className="font-mono text-xs">{truncateHash(data.headHash)}</p>
-					</div>
+					)}
 
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -125,6 +116,38 @@ export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
 						</div>
 						<Badge variant="secondary">{data.peerCount}</Badge>
 					</div>
+
+					{(data.networkBytesRecv !== undefined || data.networkBytesSent !== undefined) && (
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2 text-sm text-muted-foreground">
+								Network I/O
+							</div>
+							<div className="flex items-center gap-3 text-xs font-mono">
+								{data.networkBytesRecv !== undefined && (
+									<span className="flex items-center gap-1">
+										<ArrowDown className="h-3 w-3 text-green-500" />
+										{formatBytes(data.networkBytesRecv)}
+									</span>
+								)}
+								{data.networkBytesSent !== undefined && (
+									<span className="flex items-center gap-1">
+										<ArrowUp className="h-3 w-3 text-blue-500" />
+										{formatBytes(data.networkBytesSent)}
+									</span>
+								)}
+							</div>
+						</div>
+					)}
+
+					{data.memoryUsedMb !== undefined && (
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2 text-sm text-muted-foreground">
+								<Cpu className="h-4 w-4" />
+								Memory
+							</div>
+							<span className="font-mono text-sm">{data.memoryUsedMb.toLocaleString()} MB</span>
+						</div>
+					)}
 
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -135,9 +158,18 @@ export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
 
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
-							Protocol
+							Head Block
 						</div>
-						<p className="font-mono text-xs">{data.protocol.slice(0, 8)}...</p>
+						<p className="font-mono text-sm">
+							{data.headLevel.toLocaleString()}
+						</p>
+					</div>
+
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2 text-sm text-muted-foreground">
+							Hash
+						</div>
+						<p className="font-mono text-xs">{truncateHash(data.headHash)}</p>
 					</div>
 				</div>
 			</CardContent>

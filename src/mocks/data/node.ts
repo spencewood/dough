@@ -11,6 +11,12 @@ export const mockNodeHealth: NodeHealth = {
 	chainId: "NetXdQprcVkpaWU",
 	peerCount: 42,
 	mempoolSize: 15,
+	// Extended stats
+	nodeVersion: "24.0-release",
+	nodeCommit: "abc12345",
+	networkBytesRecv: 85_000_000_000, // ~85 GB
+	networkBytesSent: 82_000_000_000, // ~82 GB
+	memoryUsedMb: 4_096, // 4 GB
 };
 
 /** Mock block header response */

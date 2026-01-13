@@ -46,7 +46,7 @@ function dalRpc<T>(path: string): Promise<T> {
 
 /** Get node health and sync status */
 export async function getNodeHealth(): Promise<NodeHealth> {
-	const [bootstrapped, header, connections, pendingOps] = await Promise.all([
+	const [bootstrapped, header, connections, pendingOps, version, networkStat, memoryStat] = await Promise.all([
 		nodeRpc<{ bootstrapped: boolean; sync_state: string }>(
 			"/chains/main/is_bootstrapped",
 		),
@@ -61,10 +61,41 @@ export async function getNodeHealth(): Promise<NodeHealth> {
 		nodeRpc<{ validated: Array<unknown>; applied?: Array<unknown> }>(
 			"/chains/main/mempool/pending_operations",
 		),
+		// Extended stats - catch errors individually so core stats still work
+		nodeRpc<{
+			version: { major: number; minor: number; additional_info: string };
+			commit_info?: { commit_hash: string };
+		}>("/version").catch(() => null),
+		nodeRpc<{
+			total_sent: string;
+			total_recv: string;
+		}>("/network/stat").catch(() => null),
+		nodeRpc<{
+			resident?: number;
+			rss?: number;
+		}>("/stats/memory").catch(() => null),
 	]);
 
 	// mempool uses "validated" in newer protocols, "applied" in older ones
 	const mempoolOps = pendingOps.validated || pendingOps.applied || [];
+
+	// Format version string
+	let nodeVersion: string | undefined;
+	let nodeCommit: string | undefined;
+	if (version) {
+		const v = version.version;
+		nodeVersion = `${v.major}.${v.minor}${v.additional_info ? `-${v.additional_info}` : ""}`;
+		nodeCommit = version.commit_info?.commit_hash?.slice(0, 8);
+	}
+
+	// Memory: resident is in bytes on Linux, convert to MB
+	let memoryUsedMb: number | undefined;
+	if (memoryStat) {
+		const bytes = memoryStat.resident || memoryStat.rss || 0;
+		if (bytes > 0) {
+			memoryUsedMb = Math.round(bytes / (1024 * 1024));
+		}
+	}
 
 	return {
 		isBootstrapped: bootstrapped.bootstrapped,
@@ -76,6 +107,12 @@ export async function getNodeHealth(): Promise<NodeHealth> {
 		chainId: header.chain_id,
 		peerCount: connections.length,
 		mempoolSize: mempoolOps.length,
+		// Extended stats
+		nodeVersion,
+		nodeCommit,
+		networkBytesRecv: networkStat ? Number(networkStat.total_recv) : undefined,
+		networkBytesSent: networkStat ? Number(networkStat.total_sent) : undefined,
+		memoryUsedMb,
 	};
 }
 

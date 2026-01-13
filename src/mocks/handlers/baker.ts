@@ -2,6 +2,7 @@ import { HttpResponse, http } from "msw";
 import {
 	MOCK_BAKER_ADDRESS,
 	mockAttestationRights,
+	mockBakerParticipation,
 	mockBakerStatus,
 	mockBakingRights,
 	mockDelegateResponse,
@@ -92,5 +93,10 @@ export const bakerHandlers = [
 	// API route for our dashboard - rewards history
 	http.get("/api/baker/rewards", () => {
 		return HttpResponse.json(mockRewardsHistory);
+	}),
+
+	// API route for our dashboard - participation stats
+	http.get("/api/baker/participation", () => {
+		return HttpResponse.json(mockBakerParticipation);
 	}),
 ];

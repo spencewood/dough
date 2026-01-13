@@ -50,7 +50,7 @@ describe("NodeHealthCard", () => {
 	it("renders head level with formatting", () => {
 		render(<NodeHealthCard data={mockNodeHealth} />);
 
-		expect(screen.getByText("Level 5,432,100")).toBeInTheDocument();
+		expect(screen.getByText("5,432,100")).toBeInTheDocument();
 	});
 
 	it("renders peer count", () => {
@@ -71,10 +71,28 @@ describe("NodeHealthCard", () => {
 		expect(screen.getByText("BLockHas...XXXX")).toBeInTheDocument();
 	});
 
-	it("renders truncated protocol", () => {
-		render(<NodeHealthCard data={mockNodeHealth} />);
+	it("renders node version when available", () => {
+		const withVersion: NodeHealth = {
+			...mockNodeHealth,
+			nodeVersion: "20.1-rc1",
+			nodeCommit: "abc12345",
+		};
 
-		expect(screen.getByText("PsQuebec...")).toBeInTheDocument();
+		render(<NodeHealthCard data={withVersion} />);
+
+		expect(screen.getByText("20.1-rc1")).toBeInTheDocument();
+		expect(screen.getByText("abc12345")).toBeInTheDocument();
+	});
+
+	it("renders memory usage when available", () => {
+		const withMemory: NodeHealth = {
+			...mockNodeHealth,
+			memoryUsedMb: 4096,
+		};
+
+		render(<NodeHealthCard data={withMemory} />);
+
+		expect(screen.getByText("4,096 MB")).toBeInTheDocument();
 	});
 
 	it("renders zero peers correctly", () => {

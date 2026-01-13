@@ -32,6 +32,12 @@ export interface NodeHealth {
 	chainId: string;
 	peerCount: number;
 	mempoolSize: number;
+	// Extended stats
+	nodeVersion?: string;
+	nodeCommit?: string;
+	networkBytesRecv?: number;
+	networkBytesSent?: number;
+	memoryUsedMb?: number;
 }
 
 /** Computed baker status for display */
