@@ -1,5 +1,6 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Cookie } from "lucide-react";
+import { useState } from "react";
 
 import {
 	BakerStatusCard,
@@ -10,6 +11,7 @@ import {
 	ParticipationCard,
 	RewardsCard,
 	RightsCard,
+	SettingsModal,
 } from "@/components/dashboard";
 import { CardErrorBoundary } from "@/components/ui/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +34,7 @@ export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
 	const { data: settings, isLoading: settingsLoading } = useSettings();
+	const [settingsOpen, setSettingsOpen] = useState(false);
 	const nodeHealth = useNodeHealth();
 	const bakerStatus = useBakerStatus();
 	const bakerParticipation = useBakerParticipation();
@@ -56,10 +59,8 @@ function Dashboard() {
 		);
 	}
 
-	// Redirect to settings if not configured
-	if (!settings) {
-		return <Navigate to="/settings" />;
-	}
+	// Show settings modal if not configured
+	const needsSetup = !settings && !settingsLoading;
 
 	const hasError =
 		nodeHealth.error ||
@@ -72,6 +73,22 @@ function Dashboard() {
 		alerts.error ||
 		networkStats.error;
 
+	// Show setup modal on first run
+	if (needsSetup) {
+		return (
+			<div className="min-h-screen bg-background flex items-center justify-center">
+				<div className="text-center space-y-4">
+					<Cookie className="h-12 w-12 text-[#0D61FF] mx-auto" />
+					<h1 className="text-xl font-bold">Welcome to Dough</h1>
+					<p className="text-muted-foreground">
+						Let's set up your baker dashboard
+					</p>
+				</div>
+				<SettingsModal open={true} onOpenChange={() => {}} required />
+			</div>
+		);
+	}
+
 	return (
 		<div className="min-h-screen bg-background">
 			<Header
@@ -81,7 +98,10 @@ function Dashboard() {
 				bakerDomain={bakerDomain.data?.domain}
 				alerts={alerts.data}
 				alertsLoading={alerts.isLoading}
+				onSettingsClick={() => setSettingsOpen(true)}
 			/>
+
+			<SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
 
 			<main className="container mx-auto p-4 md:p-6">
 				<div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">

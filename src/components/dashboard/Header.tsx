@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Cookie, Settings } from "lucide-react";
 
 import { AlertsSheet } from "@/components/dashboard/AlertsSheet";
+import { HelpDropdown } from "@/components/dashboard/HelpDropdown";
 import { Badge } from "@/components/ui/badge";
 import type { AlertsResponse, NodeHealth } from "@/lib/types";
 
@@ -12,6 +13,7 @@ interface HeaderProps {
 	bakerDomain?: string | null;
 	alerts?: AlertsResponse;
 	alertsLoading?: boolean;
+	onSettingsClick?: () => void;
 }
 
 export function Header({
@@ -21,6 +23,7 @@ export function Header({
 	bakerDomain,
 	alerts,
 	alertsLoading,
+	onSettingsClick,
 }: HeaderProps) {
 	const getSyncBadge = () => {
 		if (!nodeHealth) {
@@ -64,12 +67,15 @@ export function Header({
 				<div className="flex items-center gap-2 md:gap-4 shrink-0">
 					{getSyncBadge()}
 					<AlertsSheet data={alerts} isLoading={alertsLoading} />
-					<Link
-						to="/settings"
+					<HelpDropdown />
+					<button
+						type="button"
+						onClick={onSettingsClick}
 						className="text-muted-foreground hover:text-foreground transition-colors p-1"
+						aria-label="Settings"
 					>
 						<Settings className="h-5 w-5" />
-					</Link>
+					</button>
 				</div>
 			</div>
 		</header>

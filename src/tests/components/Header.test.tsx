@@ -85,12 +85,12 @@ describe("Header", () => {
 		expect(screen.getByText("Stale")).toBeInTheDocument();
 	});
 
-	it("renders settings icon link", () => {
+	it("renders settings button", () => {
 		render(<Header />);
 
-		// Settings link should be present
-		const settingsLink = screen.getByRole("link", { name: "" });
-		expect(settingsLink).toHaveAttribute("href", "/settings");
+		// Settings button should be present
+		const settingsButton = screen.getByRole("button", { name: /settings/i });
+		expect(settingsButton).toBeInTheDocument();
 	});
 
 	it("renders cookie icon (logo)", () => {

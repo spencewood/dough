@@ -1,14 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-	ArrowLeft,
-	CheckCircle,
-	ExternalLink,
-	Loader2,
-	Server,
-	Settings,
-	Wallet,
-} from "lucide-react";
-import { useState } from "react";
+import { CheckCircle, Loader2, Server, Settings, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,15 +9,30 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSaveSettings, useSettings } from "@/hooks";
 
-export const Route = createFileRoute("/settings")({ component: SettingsPage });
+interface SettingsModalProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	/** If true, the modal cannot be dismissed (for first-time setup) */
+	required?: boolean;
+}
 
-function SettingsPage() {
-	const navigate = useNavigate();
+export function SettingsModal({
+	open,
+	onOpenChange,
+	required = false,
+}: SettingsModalProps) {
 	const { data: settings, isLoading } = useSettings();
 	const saveSettings = useSaveSettings();
 
@@ -34,16 +40,16 @@ function SettingsPage() {
 	const [dalNodeUrl, setDalNodeUrl] = useState("");
 	const [bakerAddress, setBakerAddress] = useState("");
 	const [bakerAlias, setBakerAlias] = useState("");
-	const [initialized, setInitialized] = useState(false);
 
-	// Initialize form with existing settings
-	if (settings && !initialized) {
-		setNodeUrl(settings.nodeUrl);
-		setDalNodeUrl(settings.dalNodeUrl ?? "");
-		setBakerAddress(settings.bakerAddress);
-		setBakerAlias(settings.bakerAlias ?? "");
-		setInitialized(true);
-	}
+	// Initialize form with existing settings when they load
+	useEffect(() => {
+		if (settings) {
+			setNodeUrl(settings.nodeUrl);
+			setDalNodeUrl(settings.dalNodeUrl ?? "");
+			setBakerAddress(settings.bakerAddress);
+			setBakerAlias(settings.bakerAlias ?? "");
+		}
+	}, [settings]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -56,7 +62,7 @@ function SettingsPage() {
 			},
 			{
 				onSuccess: () => {
-					navigate({ to: "/" });
+					onOpenChange(false);
 				},
 			},
 		);
@@ -65,30 +71,33 @@ function SettingsPage() {
 	const isValid = nodeUrl.trim() && bakerAddress.trim();
 	const isFirstSetup = !settings && !isLoading;
 
-	return (
-		<div className="min-h-screen bg-background">
-			<header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 py-3 md:px-6 md:py-4">
-				<div className="flex items-center gap-4">
-					<Link
-						to="/"
-						className="text-muted-foreground hover:text-foreground transition-colors"
-					>
-						<ArrowLeft className="h-5 w-5" />
-					</Link>
-					<div className="flex items-center gap-2">
-						<Settings className="h-6 w-6 text-muted-foreground" />
-						<h1 className="text-xl font-bold">
-							{isFirstSetup ? "Welcome to Dough" : "Settings"}
-						</h1>
-					</div>
-				</div>
-			</header>
+	// Prevent closing if required (first-time setup)
+	const handleOpenChange = (newOpen: boolean) => {
+		if (required && !newOpen) {
+			return; // Don't allow closing
+		}
+		onOpenChange(newOpen);
+	};
 
-			<main className="container mx-auto p-4 md:p-6 max-w-2xl">
+	return (
+		<Dialog open={open} onOpenChange={handleOpenChange}>
+			<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle className="flex items-center gap-2">
+						<Settings className="h-5 w-5" />
+						{isFirstSetup ? "Welcome to Dough" : "Settings"}
+					</DialogTitle>
+					<DialogDescription>
+						{isFirstSetup
+							? "Configure your Tezos baker dashboard to get started"
+							: "Manage your node and baker configuration"}
+					</DialogDescription>
+				</DialogHeader>
+
 				{isLoading ? (
 					<div className="space-y-6">
-						<Skeleton className="h-64 w-full" />
 						<Skeleton className="h-48 w-full" />
+						<Skeleton className="h-36 w-full" />
 					</div>
 				) : (
 					<form onSubmit={handleSubmit} className="space-y-6">
@@ -104,9 +113,9 @@ function SettingsPage() {
 						)}
 
 						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
-									<Server className="h-5 w-5" />
+							<CardHeader className="pb-4">
+								<CardTitle className="flex items-center gap-2 text-base">
+									<Server className="h-4 w-4" />
 									Node Configuration
 								</CardTitle>
 								<CardDescription>
@@ -146,9 +155,9 @@ function SettingsPage() {
 						</Card>
 
 						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
-									<Wallet className="h-5 w-5" />
+							<CardHeader className="pb-4">
+								<CardTitle className="flex items-center gap-2 text-base">
+									<Wallet className="h-4 w-4" />
 									Baker Configuration
 								</CardTitle>
 								<CardDescription>
@@ -206,12 +215,14 @@ function SettingsPage() {
 									</>
 								)}
 							</Button>
-							{!isFirstSetup && (
-								<Link to="/">
-									<Button type="button" variant="outline">
-										Cancel
-									</Button>
-								</Link>
+							{!required && (
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => onOpenChange(false)}
+								>
+									Cancel
+								</Button>
 							)}
 						</div>
 
@@ -220,35 +231,9 @@ function SettingsPage() {
 								Failed to save settings. Please try again.
 							</p>
 						)}
-
-						<Card>
-							<CardHeader>
-								<CardTitle>Resources</CardTitle>
-							</CardHeader>
-							<CardContent className="space-y-2">
-								<a
-									href="https://tezos.gitlab.io/introduction/howtouse.html"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-								>
-									<ExternalLink className="h-4 w-4" />
-									Octez Documentation
-								</a>
-								<a
-									href="https://tzkt.io"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-								>
-									<ExternalLink className="h-4 w-4" />
-									TzKT Block Explorer
-								</a>
-							</CardContent>
-						</Card>
 					</form>
 				)}
-			</main>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 }

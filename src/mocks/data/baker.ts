@@ -2,7 +2,7 @@ import type { BakerParticipation, BakerStatus, CycleRewards, RewardsHistory } fr
 
 /** Mock baker address - replace with actual in .env */
 export const MOCK_BAKER_ADDRESS = "tz1YourBakerAddressHereXXXXXXXXXXXXXXX";
-export const MOCK_BAKER_ALIAS = "mybaker.tez";
+export const MOCK_BAKER_ALIAS = "My Bakery";
 
 /** Mock baker status for development */
 export const mockBakerStatus: BakerStatus = {
