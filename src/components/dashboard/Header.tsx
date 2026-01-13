@@ -51,17 +51,7 @@ export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
 
 				{/* Status indicators */}
 				<div className="flex items-center gap-2 md:gap-4 shrink-0">
-					{nodeHealth && (
-						<div className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-							<span className="font-mono">
-								Level {nodeHealth.headLevel.toLocaleString()}
-							</span>
-						</div>
-					)}
 					{getSyncBadge()}
-					<Badge variant="outline" className="hidden md:inline-flex">
-						{nodeHealth?.chainId || "mainnet"}
-					</Badge>
 					<Link
 						to="/settings"
 						className="text-muted-foreground hover:text-foreground transition-colors p-1"

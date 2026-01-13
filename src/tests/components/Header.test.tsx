@@ -85,29 +85,6 @@ describe("Header", () => {
 		expect(screen.getByText("Stale")).toBeInTheDocument();
 	});
 
-	it("renders head level when node health available", () => {
-		render(<Header nodeHealth={mockNodeHealth} />);
-
-		expect(screen.getByText("Level 5,432,100")).toBeInTheDocument();
-	});
-
-	it("renders chain ID badge", () => {
-		render(<Header nodeHealth={mockNodeHealth} />);
-
-		expect(screen.getByText("NetXdQprcVkpaWU")).toBeInTheDocument();
-	});
-
-	it("renders default chain ID when not available", () => {
-		const noChainId: NodeHealth = {
-			...mockNodeHealth,
-			chainId: undefined as unknown as string,
-		};
-
-		render(<Header nodeHealth={noChainId} />);
-
-		expect(screen.getByText("mainnet")).toBeInTheDocument();
-	});
-
 	it("renders settings icon link", () => {
 		render(<Header />);
 
