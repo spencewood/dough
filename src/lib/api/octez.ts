@@ -2,6 +2,7 @@ import type {
 	AttestationRight,
 	BakerStatus,
 	BakingRight,
+	NetworkStats,
 	NodeHealth,
 } from "@/lib/types";
 import { config } from "./config";
@@ -447,5 +448,66 @@ export async function getAlerts(): Promise<
 	return {
 		alerts,
 		unreadCount: alerts.filter((a) => a.severity === "error").length,
+	};
+}
+
+/** Protocol name mapping from hash prefixes */
+const PROTOCOL_NAMES: Record<string, string> = {
+	PtSeouLo: "Seoulo",
+	PtParisC: "ParisC",
+	PtParisB: "ParisB",
+	PsParisCZ: "ParisA",
+	PtNairobi: "Nairobi",
+	PtMumbai2: "Mumbai",
+	PtLimaPt: "Lima",
+	PtKathman: "Kathmandu",
+	PtJakart: "Jakarta",
+	PsiThaCa: "Ithaca",
+	PtHangz2: "Hangzhou",
+	PtGRANAD: "Granada",
+	PtFlorea: "Florence",
+	PtEdo2Zk: "Edo",
+	PsDELPH1: "Delphi",
+	PsCARTHA: "Carthage",
+	PsBabyM1: "Babylon",
+	PsYLVpVv: "Athens",
+};
+
+/** Get protocol name from hash */
+function getProtocolName(hash: string): string {
+	const prefix = hash.slice(0, 8);
+	return PROTOCOL_NAMES[prefix] || prefix;
+}
+
+/** Get network-wide statistics */
+export async function getNetworkStats(): Promise<NetworkStats> {
+	const [header, constants] = await Promise.all([
+		nodeRpc<{
+			level: number;
+			timestamp: string;
+			protocol: string;
+			chain_id: string;
+		}>("/chains/main/blocks/head/header"),
+		nodeRpc<{
+			blocks_per_cycle: number;
+			minimal_block_delay: string;
+		}>("/chains/main/blocks/head/context/constants"),
+	]);
+
+	// Calculate cycle position
+	// Tezos cycles start from level 0, cycle = floor(level / blocks_per_cycle)
+	const blocksPerCycle = constants.blocks_per_cycle;
+	const currentCycle = Math.floor(header.level / blocksPerCycle);
+	const cyclePosition = header.level % blocksPerCycle;
+
+	return {
+		currentCycle,
+		cyclePosition,
+		blocksPerCycle,
+		minimalBlockDelay: Number(constants.minimal_block_delay),
+		headLevel: header.level,
+		headTimestamp: header.timestamp,
+		protocol: getProtocolName(header.protocol),
+		chainId: header.chain_id,
 	};
 }

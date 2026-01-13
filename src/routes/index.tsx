@@ -6,6 +6,7 @@ import {
 	BakerStatusCard,
 	DalStatusCard,
 	Header,
+	NetworkStatsCard,
 	NodeHealthCard,
 	RewardsCard,
 	RightsCard,
@@ -17,7 +18,9 @@ import {
 	useAttestationRights,
 	useBakerStatus,
 	useBakingRights,
+	useBlockStream,
 	useDalStatus,
+	useNetworkStats,
 	useNodeHealth,
 	useRewards,
 	useSettings,
@@ -34,6 +37,8 @@ function Dashboard() {
 	const rewards = useRewards();
 	const dalStatus = useDalStatus();
 	const alerts = useAlerts();
+	const networkStats = useNetworkStats();
+	const blockStream = useBlockStream();
 
 	// Show loading while checking settings
 	if (settingsLoading) {
@@ -59,7 +64,8 @@ function Dashboard() {
 		attestationRights.error ||
 		rewards.error ||
 		dalStatus.error ||
-		alerts.error;
+		alerts.error ||
+		networkStats.error;
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -71,6 +77,16 @@ function Dashboard() {
 
 			<main className="container mx-auto p-4 md:p-6">
 				<div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					<CardErrorBoundary
+						cardTitle="Network"
+						onRetry={() => networkStats.refetch()}
+					>
+						<NetworkStatsCard
+							data={networkStats.data}
+							isLoading={networkStats.isLoading}
+							blockStream={blockStream}
+						/>
+					</CardErrorBoundary>
 					<CardErrorBoundary
 						cardTitle="Node Health"
 						onRetry={() => nodeHealth.refetch()}
@@ -134,7 +150,8 @@ function Dashboard() {
 								attestationRights.error?.message ||
 								rewards.error?.message ||
 								dalStatus.error?.message ||
-								alerts.error?.message}
+								alerts.error?.message ||
+								networkStats.error?.message}
 						</p>
 					</div>
 				)}

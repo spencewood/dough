@@ -2,6 +2,7 @@ export { AlertsCard } from "./AlertsCard";
 export { BakerStatusCard } from "./BakerStatusCard";
 export { DalStatusCard } from "./DalStatusCard";
 export { Header } from "./Header";
+export { NetworkStatsCard } from "./NetworkStatsCard";
 export { NodeHealthCard } from "./NodeHealthCard";
 export { RewardsCard } from "./RewardsCard";
 export { RightsCard } from "./RightsCard";

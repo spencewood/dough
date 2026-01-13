@@ -120,3 +120,38 @@ export interface AlertsResponse {
 	alerts: Alert[];
 	unreadCount: number;
 }
+
+/** Network-wide statistics for ecosystem overview */
+export interface NetworkStats {
+	currentCycle: number;
+	cyclePosition: number;
+	blocksPerCycle: number;
+	minimalBlockDelay: number;
+	headLevel: number;
+	headTimestamp: string;
+	protocol: string;
+	chainId: string;
+}
+
+/** Block info from WebSocket stream */
+export interface BlockInfo {
+	level: number;
+	hash: string;
+	timestamp: string;
+}
+
+/** WebSocket message for block stream */
+export interface BlockStreamMessage {
+	type: "block";
+	block: BlockInfo;
+	serverTime: string;
+}
+
+/** Block stream state for UI */
+export interface BlockStreamState {
+	latestBlock: BlockInfo | null;
+	serverDriftMs: number | null;
+	browserDriftMs: number | null;
+	isConnected: boolean;
+	secondsSinceBlock: number;
+}
