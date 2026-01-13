@@ -29,8 +29,52 @@ import {
 	useRewards,
 	useSettings,
 } from "@/hooks";
+import { getDashboardData } from "@/lib/server/dashboard-data";
 
-export const Route = createFileRoute("/")({ component: Dashboard });
+export const Route = createFileRoute("/")({
+	loader: async ({ context }) => {
+		const { queryClient } = context;
+
+		// Fetch all dashboard data on the server
+		const data = await getDashboardData();
+
+		// Pre-populate the query cache with server-fetched data
+		// This eliminates CLS by having data available on first render
+		if (data.settings !== undefined) {
+			queryClient.setQueryData(["settings"], data.settings);
+		}
+		if (data.nodeHealth) {
+			queryClient.setQueryData(["node", "health"], data.nodeHealth);
+		}
+		if (data.bakerStatus) {
+			queryClient.setQueryData(["baker", "status"], data.bakerStatus);
+		}
+		if (data.bakerParticipation) {
+			queryClient.setQueryData(["baker", "participation"], data.bakerParticipation);
+		}
+		if (data.bakingRights) {
+			queryClient.setQueryData(["baker", "rights", "baking"], data.bakingRights);
+		}
+		if (data.attestationRights) {
+			queryClient.setQueryData(["baker", "rights", "attestation"], data.attestationRights);
+		}
+		if (data.rewards) {
+			queryClient.setQueryData(["baker", "rewards"], data.rewards);
+		}
+		if (data.dalStatus) {
+			queryClient.setQueryData(["dal", "status"], data.dalStatus);
+		}
+		if (data.networkStats) {
+			queryClient.setQueryData(["network", "stats"], data.networkStats);
+		}
+		if (data.alerts) {
+			queryClient.setQueryData(["alerts"], data.alerts);
+		}
+
+		return data;
+	},
+	component: Dashboard,
+});
 
 function Dashboard() {
 	const { data: settings, isLoading: settingsLoading } = useSettings();
