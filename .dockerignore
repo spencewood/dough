@@ -1,0 +1,45 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+dist-ssr
+.output
+.nitro
+.tanstack
+.vinxi
+.wrangler
+
+# Development files
+*.local
+.env
+.env.*
+
+# IDE and OS files
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+
+# Test files
+coverage
+*.test.ts
+*.test.tsx
+src/tests
+vitest.config.ts
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Misc
+*.md
+*.log
+count.txt
+todos.json

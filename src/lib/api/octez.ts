@@ -56,10 +56,13 @@ export async function getNodeHealth(): Promise<NodeHealth> {
 			chain_id: string;
 		}>("/chains/main/blocks/head/header"),
 		nodeRpc<Array<unknown>>("/network/connections"),
-		nodeRpc<{ applied: Array<unknown> }>(
+		nodeRpc<{ validated: Array<unknown>; applied?: Array<unknown> }>(
 			"/chains/main/mempool/pending_operations",
 		),
 	]);
+
+	// mempool uses "validated" in newer protocols, "applied" in older ones
+	const mempoolOps = pendingOps.validated || pendingOps.applied || [];
 
 	return {
 		isBootstrapped: bootstrapped.bootstrapped,
@@ -70,7 +73,7 @@ export async function getNodeHealth(): Promise<NodeHealth> {
 		protocol: header.protocol,
 		chainId: header.chain_id,
 		peerCount: connections.length,
-		mempoolSize: pendingOps.applied.length,
+		mempoolSize: mempoolOps.length,
 	};
 }
 
@@ -81,31 +84,51 @@ export async function getBakerStatus(): Promise<BakerStatus> {
 		throw new Error("BAKER_ADDRESS not configured");
 	}
 
+	// Newer protocol (Seoulo+) uses different field names
 	const delegate = await nodeRpc<{
-		full_balance: string;
-		current_frozen_deposits: string;
-		staking_balance: string;
-		delegated_balance: string;
+		// New field names (Seoulo+)
+		own_full_balance?: string;
+		total_staked?: string;
+		total_delegated?: string;
+		delegators?: string[];
+		// Legacy field names (pre-Seoulo)
+		full_balance?: string;
+		current_frozen_deposits?: string;
+		staking_balance?: string;
+		delegated_balance?: string;
+		delegated_contracts?: string[];
+		// Common fields
 		deactivated: boolean;
 		grace_period: number;
-		delegated_contracts: string[];
 	}>(`/chains/main/blocks/head/context/delegates/${address}`);
 
+	// Support both old and new field names
+	const fullBalance =
+		delegate.own_full_balance || delegate.full_balance || "0";
+	const frozenDeposits =
+		delegate.total_staked || delegate.current_frozen_deposits || "0";
+	const stakingBalance =
+		delegate.total_staked || delegate.staking_balance || "0";
+	const delegatedBalance =
+		delegate.total_delegated || delegate.delegated_balance || "0";
+	const delegatorCount =
+		delegate.delegators?.length || delegate.delegated_contracts?.length || 0;
+
 	// Calculate staking capacity
-	const stakingBalance = Number(delegate.staking_balance);
-	const fullBalance = Number(delegate.full_balance);
-	const stakingCapacity = fullBalance * 9; // 9x over-staking limit
+	const stakingBalanceNum = Number(stakingBalance);
+	const fullBalanceNum = Number(fullBalance);
+	const stakingCapacity = fullBalanceNum * 9; // 9x over-staking limit
 	const stakingCapacityUsed =
-		stakingCapacity > 0 ? (stakingBalance / stakingCapacity) * 100 : 0;
+		stakingCapacity > 0 ? (stakingBalanceNum / stakingCapacity) * 100 : 0;
 
 	return {
 		address,
 		alias: config.bakerAlias,
-		fullBalance: delegate.full_balance,
-		frozenDeposits: delegate.current_frozen_deposits,
-		stakingBalance: delegate.staking_balance,
-		delegatedBalance: delegate.delegated_balance,
-		delegatorCount: delegate.delegated_contracts.length,
+		fullBalance,
+		frozenDeposits,
+		stakingBalance,
+		delegatedBalance,
+		delegatorCount,
 		gracePeriod: delegate.grace_period,
 		isDeactivated: delegate.deactivated,
 		stakingCapacityUsed,
@@ -114,8 +137,7 @@ export async function getBakerStatus(): Promise<BakerStatus> {
 
 /** Get upcoming baking rights */
 export async function getBakingRights(
-	maxPriority = 1,
-	levels = 10,
+	maxRound = 1,
 ): Promise<BakingRight[]> {
 	const address = config.bakerAddress;
 	if (!address) {
@@ -130,7 +152,7 @@ export async function getBakingRights(
 			estimated_time?: string;
 		}>
 	>(
-		`/chains/main/blocks/head/helpers/baking_rights?delegate=${address}&max_round=${maxPriority}&cycle=head&max_priority=${levels}`,
+		`/chains/main/blocks/head/helpers/baking_rights?delegate=${address}&max_round=${maxRound}`,
 	);
 
 	return rights.map((r) => ({
@@ -199,26 +221,33 @@ export async function getDalStatus() {
 	}
 }
 
-/** TzKT reward response for a cycle */
+/** TzKT reward response for a cycle (newer API format) */
 interface TzKTRewardResponse {
 	cycle: number;
-	stakingBalance: number;
-	delegatedBalance: number;
-	numDelegators: number;
-	expectedBlocks: number;
-	expectedEndorsements: number;
-	futureBlocks: number;
-	futureBlockRewards: number;
-	blocks: number;
-	blockRewards: number;
-	missedBlocks: number;
+	// Staking fields
+	ownStakedBalance: number;
+	externalStakedBalance: number;
+	ownDelegatedBalance: number;
+	externalDelegatedBalance: number;
+	delegatorsCount: number;
+	// Block rewards (split by reward recipient type)
+	blockRewardsDelegated: number;
+	blockRewardsStakedOwn: number;
+	blockRewardsStakedEdge: number;
+	blockRewardsStakedShared: number;
 	missedBlockRewards: number;
-	futureEndorsements: number;
-	futureEndorsementRewards: number;
-	endorsements: number;
-	endorsementRewards: number;
-	missedEndorsements: number;
-	missedEndorsementRewards: number;
+	// Attestation rewards (split by reward recipient type)
+	attestationRewardsDelegated: number;
+	attestationRewardsStakedOwn: number;
+	attestationRewardsStakedEdge: number;
+	attestationRewardsStakedShared: number;
+	missedAttestationRewards: number;
+	// Endorsement rewards (older name, kept for compatibility)
+	endorsementRewardsDelegated?: number;
+	endorsementRewardsStakedOwn?: number;
+	endorsementRewardsStakedEdge?: number;
+	endorsementRewardsStakedShared?: number;
+	missedEndorsementRewards?: number;
 }
 
 /** Get rewards history from TzKT API */
@@ -238,24 +267,39 @@ export async function getRewardsHistory(
 		`/v1/rewards/bakers/${address}?limit=${numCycles}&sort.desc=cycle`,
 	);
 
-	const cycles = response.map((r) => ({
-		cycle: r.cycle,
-		bakingRewards: (r.blockRewards * 1_000_000).toString(), // Convert to mutez
-		attestationRewards: (r.endorsementRewards * 1_000_000).toString(),
-		totalRewards: (
-			(r.blockRewards + r.endorsementRewards) *
-			1_000_000
-		).toString(),
-		missedBakingRewards: (r.missedBlockRewards * 1_000_000).toString(),
-		missedAttestationRewards: (
-			r.missedEndorsementRewards * 1_000_000
-		).toString(),
-		ownStakingBalance: (
-			(r.stakingBalance - r.delegatedBalance) *
-			1_000_000
-		).toString(),
-		externalStakingBalance: (r.delegatedBalance * 1_000_000).toString(),
-	}));
+	const cycles = response.map((r) => {
+		// Sum block rewards from all sources (values already in mutez)
+		const blockRewards =
+			(r.blockRewardsDelegated || 0) +
+			(r.blockRewardsStakedOwn || 0) +
+			(r.blockRewardsStakedEdge || 0) +
+			(r.blockRewardsStakedShared || 0);
+
+		// Sum attestation rewards (use attestation or endorsement fields)
+		const attestationRewards =
+			(r.attestationRewardsDelegated || r.endorsementRewardsDelegated || 0) +
+			(r.attestationRewardsStakedOwn || r.endorsementRewardsStakedOwn || 0) +
+			(r.attestationRewardsStakedEdge || r.endorsementRewardsStakedEdge || 0) +
+			(r.attestationRewardsStakedShared ||
+				r.endorsementRewardsStakedShared ||
+				0);
+
+		const missedAttestation =
+			r.missedAttestationRewards || r.missedEndorsementRewards || 0;
+
+		return {
+			cycle: r.cycle,
+			bakingRewards: blockRewards.toString(),
+			attestationRewards: attestationRewards.toString(),
+			totalRewards: (blockRewards + attestationRewards).toString(),
+			missedBakingRewards: (r.missedBlockRewards || 0).toString(),
+			missedAttestationRewards: missedAttestation.toString(),
+			ownStakingBalance: (r.ownStakedBalance || 0).toString(),
+			externalStakingBalance: (
+				(r.externalStakedBalance || 0) + (r.externalDelegatedBalance || 0)
+			).toString(),
+		};
+	});
 
 	const totalEarned = cycles
 		.reduce((sum, c) => sum + BigInt(c.totalRewards), BigInt(0))

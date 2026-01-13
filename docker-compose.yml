@@ -1,0 +1,27 @@
+services:
+  dough:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dough
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist SQLite database
+      - dough-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3000
+      - DOUGH_DB_PATH=/app/data/dough.db
+    networks:
+      - dough-network
+
+volumes:
+  dough-data:
+    driver: local
+
+networks:
+  dough-network:
+    driver: bridge
