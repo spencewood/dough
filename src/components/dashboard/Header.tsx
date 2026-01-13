@@ -1,4 +1,5 @@
-import { Cookie } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Cookie, Settings } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import type { NodeHealth } from "@/lib/types";
@@ -57,6 +58,12 @@ export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
 					)}
 					{getSyncBadge()}
 					<Badge variant="outline">{nodeHealth?.chainId || "mainnet"}</Badge>
+					<Link
+						to="/settings"
+						className="text-muted-foreground hover:text-foreground transition-colors"
+					>
+						<Settings className="h-5 w-5" />
+					</Link>
 				</div>
 			</div>
 		</header>
