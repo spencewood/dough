@@ -99,4 +99,12 @@ export const bakerHandlers = [
 	http.get("/api/baker/participation", () => {
 		return HttpResponse.json(mockBakerParticipation);
 	}),
+
+	// API route for our dashboard - baker domain (Tezos Domains reverse lookup)
+	http.get("/api/baker/domain", () => {
+		return HttpResponse.json({
+			domain: "mybaker.tez",
+			address: MOCK_BAKER_ADDRESS,
+		});
+	}),
 ];

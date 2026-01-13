@@ -50,11 +50,6 @@ interface RewardsCardProps {
 const TEZOS_BLUE = "#0D61FF";
 const TEZOS_BLUE_LIGHT = "#4A90FF";
 
-function formatXtzFull(mutez: string): string {
-	const xtz = Number(BigInt(mutez)) / 1_000_000;
-	return `${xtz.toLocaleString(undefined, { maximumFractionDigits: 2 })} XTZ`;
-}
-
 function formatXtzCompact(mutez: string | number): string {
 	const xtz = typeof mutez === "string" ? Number(BigInt(mutez)) / 1_000_000 : mutez;
 	if (xtz >= 1_000_000) {

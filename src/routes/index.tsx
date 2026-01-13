@@ -2,7 +2,6 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Cookie } from "lucide-react";
 
 import {
-	AlertsCard,
 	BakerStatusCard,
 	DalStatusCard,
 	Header,
@@ -17,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
 	useAlerts,
 	useAttestationRights,
+	useBakerDomain,
 	useBakerParticipation,
 	useBakerStatus,
 	useBakingRights,
@@ -42,6 +42,7 @@ function Dashboard() {
 	const alerts = useAlerts();
 	const networkStats = useNetworkStats();
 	const blockStream = useBlockStream();
+	const bakerDomain = useBakerDomain();
 
 	// Show loading while checking settings
 	if (settingsLoading) {
@@ -77,6 +78,9 @@ function Dashboard() {
 				nodeHealth={nodeHealth.data}
 				bakerAlias={bakerStatus.data?.alias}
 				bakerAddress={bakerStatus.data?.address}
+				bakerDomain={bakerDomain.data?.domain}
+				alerts={alerts.data}
+				alertsLoading={alerts.isLoading}
 			/>
 
 			<main className="container mx-auto p-4 md:p-6">
@@ -150,12 +154,6 @@ function Dashboard() {
 							data={dalStatus.data}
 							isLoading={dalStatus.isLoading}
 						/>
-					</CardErrorBoundary>
-					<CardErrorBoundary
-						cardTitle="Alerts"
-						onRetry={() => alerts.refetch()}
-					>
-						<AlertsCard data={alerts.data} isLoading={alerts.isLoading} />
 					</CardErrorBoundary>
 				</div>
 

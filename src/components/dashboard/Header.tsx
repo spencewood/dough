@@ -1,16 +1,27 @@
 import { Link } from "@tanstack/react-router";
 import { Cookie, Settings } from "lucide-react";
 
+import { AlertsSheet } from "@/components/dashboard/AlertsSheet";
 import { Badge } from "@/components/ui/badge";
-import type { NodeHealth } from "@/lib/types";
+import type { AlertsResponse, NodeHealth } from "@/lib/types";
 
 interface HeaderProps {
 	nodeHealth?: NodeHealth;
 	bakerAlias?: string;
 	bakerAddress?: string;
+	bakerDomain?: string | null;
+	alerts?: AlertsResponse;
+	alertsLoading?: boolean;
 }
 
-export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
+export function Header({
+	nodeHealth,
+	bakerAlias,
+	bakerAddress,
+	bakerDomain,
+	alerts,
+	alertsLoading,
+}: HeaderProps) {
 	const getSyncBadge = () => {
 		if (!nodeHealth) {
 			return <Badge variant="secondary">Loading...</Badge>;
@@ -41,9 +52,9 @@ export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
 						<h1 className="text-lg md:text-xl font-bold truncate">
 							{bakerAlias || "Dough"}
 						</h1>
-						{bakerAddress && (
+						{(bakerDomain || bakerAddress) && (
 							<p className="text-xs text-muted-foreground font-mono hidden sm:block">
-								{truncateAddress(bakerAddress)}
+								{bakerDomain || (bakerAddress && truncateAddress(bakerAddress))}
 							</p>
 						)}
 					</div>
@@ -52,6 +63,7 @@ export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
 				{/* Status indicators */}
 				<div className="flex items-center gap-2 md:gap-4 shrink-0">
 					{getSyncBadge()}
+					<AlertsSheet data={alerts} isLoading={alertsLoading} />
 					<Link
 						to="/settings"
 						className="text-muted-foreground hover:text-foreground transition-colors p-1"

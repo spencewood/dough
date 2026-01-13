@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Header } from "@/components/dashboard/Header";
-import type { NodeHealth } from "@/lib/types";
+import type { AlertsResponse, NodeHealth } from "@/lib/types";
 import { render, screen } from "@/tests/test-utils";
 
 const mockNodeHealth: NodeHealth = {
@@ -99,5 +99,61 @@ describe("Header", () => {
 		// The logo link to home should exist
 		const homeLink = screen.getAllByRole("link")[0];
 		expect(homeLink).toHaveAttribute("href", "/");
+	});
+
+	it("renders baker domain when provided", () => {
+		render(<Header bakerDomain="mybaker.tez" />);
+
+		expect(screen.getByText("mybaker.tez")).toBeInTheDocument();
+	});
+
+	it("renders domain instead of address when both provided", () => {
+		render(
+			<Header
+				bakerAddress="tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
+				bakerDomain="mybaker.tez"
+			/>,
+		);
+
+		expect(screen.getByText("mybaker.tez")).toBeInTheDocument();
+		expect(screen.queryByText("tz1VSUr8...jcjb")).not.toBeInTheDocument();
+	});
+
+	it("renders alerts button", () => {
+		render(<Header />);
+
+		const alertsButton = screen.getByRole("button", { name: /alerts/i });
+		expect(alertsButton).toBeInTheDocument();
+	});
+
+	it("renders alert badge count when there are unread alerts", () => {
+		const mockAlerts: AlertsResponse = {
+			alerts: [
+				{
+					id: "1",
+					type: "missed_bake",
+					severity: "error",
+					message: "Missed a bake!",
+					timestamp: new Date().toISOString(),
+				},
+			],
+			unreadCount: 3,
+		};
+
+		render(<Header alerts={mockAlerts} />);
+
+		expect(screen.getByText("3")).toBeInTheDocument();
+	});
+
+	it("does not render badge when no unread alerts", () => {
+		const mockAlerts: AlertsResponse = {
+			alerts: [],
+			unreadCount: 0,
+		};
+
+		render(<Header alerts={mockAlerts} />);
+
+		// Should not have a badge number
+		expect(screen.queryByText("0")).not.toBeInTheDocument();
 	});
 });

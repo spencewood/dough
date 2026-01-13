@@ -1,5 +1,6 @@
 export { useAlerts } from "./useAlerts";
 export { useAttestationRights } from "./useAttestationRights";
+export { useBakerDomain } from "./useBakerDomain";
 export { useBakerParticipation } from "./useBakerParticipation";
 export { useBakerStatus } from "./useBakerStatus";
 export { useBakingRights } from "./useBakingRights";

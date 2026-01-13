@@ -142,7 +142,7 @@ export default defineWebSocketHandler({
 		}
 	},
 
-	message(peer, message) {
+	message(_peer, message) {
 		// We don't expect messages from clients, but log them
 		console.log("[WS] Received message:", message);
 	},
