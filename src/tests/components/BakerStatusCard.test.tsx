@@ -46,7 +46,7 @@ describe("BakerStatusCard", () => {
 
 		render(<BakerStatusCard data={noAliasStatus} />);
 
-		expect(screen.getByText("tz1abc12...")).toBeInTheDocument();
+		expect(screen.getByText("tz1TestB...")).toBeInTheDocument();
 	});
 
 	it("renders active status badge", () => {
