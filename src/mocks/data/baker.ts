@@ -1,0 +1,84 @@
+import type { BakerStatus } from "@/lib/types";
+
+/** Mock baker address - replace with actual in .env */
+export const MOCK_BAKER_ADDRESS = "tz1YourBakerAddressHereXXXXXXXXXXXXXXX";
+export const MOCK_BAKER_ALIAS = "mybaker.tez";
+
+/** Mock baker status for development */
+export const mockBakerStatus: BakerStatus = {
+	address: MOCK_BAKER_ADDRESS,
+	alias: MOCK_BAKER_ALIAS,
+	fullBalance: "1234567890123", // ~1.2M XTZ in mutez
+	frozenDeposits: "100000000000", // 100k XTZ
+	stakingBalance: "5000000000000", // 5M XTZ
+	delegatedBalance: "3765432109877", // ~3.7M XTZ
+	delegatorCount: 127,
+	isDeactivated: false,
+	gracePeriod: 5,
+	stakingCapacityUsed: 75.5,
+};
+
+/** Mock delegate RPC response (matches Taquito DelegatesResponse shape) */
+export const mockDelegateResponse = {
+	full_balance: "1234567890123",
+	current_frozen_deposits: "100000000000",
+	frozen_deposits: "100000000000",
+	staking_balance: "5000000000000",
+	delegated_contracts: Array.from(
+		{ length: 127 },
+		(_, i) => `tz1Delegator${i.toString().padStart(3, "0")}XXXXXXXXXXXXXXXXX`,
+	),
+	delegated_balance: "3765432109877",
+	deactivated: false,
+	grace_period: 5,
+	pending_denunciations: false,
+	voting_power: "5000000000000",
+	active_consensus_key:
+		"edpkXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+};
+
+/** Mock baking rights */
+export const mockBakingRights = [
+	{
+		level: 5_432_150,
+		delegate: MOCK_BAKER_ADDRESS,
+		round: 0,
+		estimated_time: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 min from now
+	},
+	{
+		level: 5_432_280,
+		delegate: MOCK_BAKER_ADDRESS,
+		round: 0,
+		estimated_time: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+	},
+	{
+		level: 5_432_450,
+		delegate: MOCK_BAKER_ADDRESS,
+		round: 0,
+		estimated_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
+	},
+];
+
+/** Mock attestation rights */
+export const mockAttestationRights = [
+	{
+		level: 5_432_101,
+		delegates: [
+			{
+				delegate: MOCK_BAKER_ADDRESS,
+				first_slot: 42,
+				attestation_power: 5,
+			},
+		],
+	},
+	{
+		level: 5_432_102,
+		delegates: [
+			{
+				delegate: MOCK_BAKER_ADDRESS,
+				first_slot: 128,
+				attestation_power: 3,
+			},
+		],
+	},
+];
