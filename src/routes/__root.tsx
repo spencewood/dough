@@ -24,7 +24,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "Tezos Baker Dashboard",
+				title: "Dough - Tezos Baker Dashboard",
 			},
 		],
 		links: [

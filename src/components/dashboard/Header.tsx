@@ -34,12 +34,10 @@ export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
 		<header className="border-b border-border bg-card px-6 py-4">
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
-					<div className="flex items-center gap-2">
-						<Cookie className="h-8 w-8 text-primary" />
+					<div className="flex items-center gap-3">
+						<Cookie className="h-9 w-9 text-[#0D61FF]" />
 						<div>
-							<h1 className="text-xl font-bold">
-								{bakerAlias || "Baker Dashboard"}
-							</h1>
+							<h1 className="text-xl font-bold">{bakerAlias || "Dough"}</h1>
 							{bakerAddress && (
 								<p className="text-xs text-muted-foreground font-mono">
 									{truncateAddress(bakerAddress)}
