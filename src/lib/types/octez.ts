@@ -91,3 +91,32 @@ export interface RewardsHistory {
 	totalEarned: string;
 	totalMissed: string;
 }
+
+/** Alert severity levels */
+export type AlertSeverity = "info" | "warning" | "error";
+
+/** Alert type categories */
+export type AlertType =
+	| "missed_bake"
+	| "missed_attestation"
+	| "low_balance"
+	| "deactivation_warning"
+	| "node_behind"
+	| "dal_disconnected";
+
+/** Individual alert item */
+export interface Alert {
+	id: string;
+	type: AlertType;
+	severity: AlertSeverity;
+	message: string;
+	timestamp: string;
+	level?: number;
+	cycle?: number;
+}
+
+/** Alerts response */
+export interface AlertsResponse {
+	alerts: Alert[];
+	unreadCount: number;
+}
