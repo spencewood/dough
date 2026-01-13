@@ -32,35 +32,39 @@ export function Header({ nodeHealth, bakerAlias, bakerAddress }: HeaderProps) {
 	};
 
 	return (
-		<header className="border-b border-border bg-card px-6 py-4">
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<div className="flex items-center gap-3">
-						<Cookie className="h-9 w-9 text-[#0D61FF]" />
-						<div>
-							<h1 className="text-xl font-bold">{bakerAlias || "Dough"}</h1>
-							{bakerAddress && (
-								<p className="text-xs text-muted-foreground font-mono">
-									{truncateAddress(bakerAddress)}
-								</p>
-							)}
-						</div>
+		<header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 py-3 md:px-6 md:py-4">
+			<div className="flex items-center justify-between gap-2">
+				{/* Logo and title */}
+				<Link to="/" className="flex items-center gap-2 md:gap-3 min-w-0">
+					<Cookie className="h-7 w-7 md:h-9 md:w-9 text-[#0D61FF] shrink-0" />
+					<div className="min-w-0">
+						<h1 className="text-lg md:text-xl font-bold truncate">
+							{bakerAlias || "Dough"}
+						</h1>
+						{bakerAddress && (
+							<p className="text-xs text-muted-foreground font-mono hidden sm:block">
+								{truncateAddress(bakerAddress)}
+							</p>
+						)}
 					</div>
-				</div>
+				</Link>
 
-				<div className="flex items-center gap-4">
+				{/* Status indicators */}
+				<div className="flex items-center gap-2 md:gap-4 shrink-0">
 					{nodeHealth && (
-						<div className="text-sm text-muted-foreground">
+						<div className="text-xs md:text-sm text-muted-foreground hidden sm:block">
 							<span className="font-mono">
 								Level {nodeHealth.headLevel.toLocaleString()}
 							</span>
 						</div>
 					)}
 					{getSyncBadge()}
-					<Badge variant="outline">{nodeHealth?.chainId || "mainnet"}</Badge>
+					<Badge variant="outline" className="hidden md:inline-flex">
+						{nodeHealth?.chainId || "mainnet"}
+					</Badge>
 					<Link
 						to="/settings"
-						className="text-muted-foreground hover:text-foreground transition-colors"
+						className="text-muted-foreground hover:text-foreground transition-colors p-1"
 					>
 						<Settings className="h-5 w-5" />
 					</Link>
