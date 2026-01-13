@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { Cookie } from "lucide-react";
 
 import {
 	AlertsCard,
@@ -9,6 +10,7 @@ import {
 	RewardsCard,
 	RightsCard,
 } from "@/components/dashboard";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	useAlerts,
 	useAttestationRights,
@@ -17,11 +19,13 @@ import {
 	useDalStatus,
 	useNodeHealth,
 	useRewards,
+	useSettings,
 } from "@/hooks";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
+	const { data: settings, isLoading: settingsLoading } = useSettings();
 	const nodeHealth = useNodeHealth();
 	const bakerStatus = useBakerStatus();
 	const bakingRights = useBakingRights();
@@ -29,6 +33,23 @@ function Dashboard() {
 	const rewards = useRewards();
 	const dalStatus = useDalStatus();
 	const alerts = useAlerts();
+
+	// Show loading while checking settings
+	if (settingsLoading) {
+		return (
+			<div className="min-h-screen bg-background flex items-center justify-center">
+				<div className="text-center space-y-4">
+					<Cookie className="h-12 w-12 text-[#0D61FF] mx-auto animate-pulse" />
+					<Skeleton className="h-4 w-32 mx-auto" />
+				</div>
+			</div>
+		);
+	}
+
+	// Redirect to settings if not configured
+	if (!settings) {
+		return <Navigate to="/settings" />;
+	}
 
 	const hasError =
 		nodeHealth.error ||

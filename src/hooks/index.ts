@@ -5,3 +5,4 @@ export { useBakingRights } from "./useBakingRights";
 export { useDalStatus } from "./useDalStatus";
 export { useNodeHealth } from "./useNodeHealth";
 export { useRewards } from "./useRewards";
+export { useSaveSettings, useSettings } from "./useSettings";

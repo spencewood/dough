@@ -22,6 +22,7 @@
 		"@tanstack/react-start": "^1.132.0",
 		"@tanstack/router-plugin": "^1.132.0",
 		"@taquito/rpc": "^24.0.0",
+		"better-sqlite3": "^12.6.0",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"lucide-react": "^0.561.0",
@@ -40,6 +41,7 @@
 		"@testing-library/dom": "^10.4.0",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.2.0",
+		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^22.10.2",
 		"@types/react": "^19.2.0",
 		"@types/react-dom": "^19.2.0",
@@ -53,6 +55,11 @@
 	"msw": {
 		"workerDirectory": [
 			"public"
+		]
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"better-sqlite3"
 		]
 	}
 }
