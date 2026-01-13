@@ -10,6 +10,7 @@ import {
 	RewardsCard,
 	RightsCard,
 } from "@/components/dashboard";
+import { CardErrorBoundary } from "@/components/ui/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
 	useAlerts,
@@ -70,25 +71,58 @@ function Dashboard() {
 
 			<main className="container mx-auto p-4 md:p-6">
 				<div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-					<NodeHealthCard
-						data={nodeHealth.data}
-						isLoading={nodeHealth.isLoading}
-					/>
-					<BakerStatusCard
-						data={bakerStatus.data}
-						isLoading={bakerStatus.isLoading}
-					/>
-					<RightsCard
-						bakingRights={bakingRights.data}
-						attestationRights={attestationRights.data}
-						isLoading={bakingRights.isLoading || attestationRights.isLoading}
-					/>
-					<RewardsCard data={rewards.data} isLoading={rewards.isLoading} />
-					<DalStatusCard
-						data={dalStatus.data}
-						isLoading={dalStatus.isLoading}
-					/>
-					<AlertsCard data={alerts.data} isLoading={alerts.isLoading} />
+					<CardErrorBoundary
+						cardTitle="Node Health"
+						onRetry={() => nodeHealth.refetch()}
+					>
+						<NodeHealthCard
+							data={nodeHealth.data}
+							isLoading={nodeHealth.isLoading}
+						/>
+					</CardErrorBoundary>
+					<CardErrorBoundary
+						cardTitle="Baker Status"
+						onRetry={() => bakerStatus.refetch()}
+					>
+						<BakerStatusCard
+							data={bakerStatus.data}
+							isLoading={bakerStatus.isLoading}
+						/>
+					</CardErrorBoundary>
+					<CardErrorBoundary
+						cardTitle="Rights"
+						onRetry={() => {
+							bakingRights.refetch();
+							attestationRights.refetch();
+						}}
+					>
+						<RightsCard
+							bakingRights={bakingRights.data}
+							attestationRights={attestationRights.data}
+							isLoading={bakingRights.isLoading || attestationRights.isLoading}
+						/>
+					</CardErrorBoundary>
+					<CardErrorBoundary
+						cardTitle="Rewards"
+						onRetry={() => rewards.refetch()}
+					>
+						<RewardsCard data={rewards.data} isLoading={rewards.isLoading} />
+					</CardErrorBoundary>
+					<CardErrorBoundary
+						cardTitle="DAL Status"
+						onRetry={() => dalStatus.refetch()}
+					>
+						<DalStatusCard
+							data={dalStatus.data}
+							isLoading={dalStatus.isLoading}
+						/>
+					</CardErrorBoundary>
+					<CardErrorBoundary
+						cardTitle="Alerts"
+						onRetry={() => alerts.refetch()}
+					>
+						<AlertsCard data={alerts.data} isLoading={alerts.isLoading} />
+					</CardErrorBoundary>
 				</div>
 
 				{hasError && (

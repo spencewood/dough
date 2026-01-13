@@ -10,6 +10,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect, useState } from "react";
 
+import { GlobalErrorFallback } from "@/components/ui/error-boundary";
 import type { RouterContext } from "@/router";
 import appCss from "@/styles.css?url";
 
@@ -37,6 +38,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 	component: RootComponent,
 	shellComponent: RootDocument,
+	errorComponent: GlobalErrorFallback,
 });
 
 function RootComponent() {

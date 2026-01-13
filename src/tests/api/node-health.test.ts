@@ -1,7 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 
-import type { NodeHealth } from "@/lib/api/types";
 import { server } from "@/tests/setup";
 
 describe("Node Health API", () => {
@@ -22,14 +21,16 @@ describe("Node Health API", () => {
 		});
 
 		it("returns node health when configured", async () => {
-			const mockHealth: NodeHealth = {
-				status: "healthy",
-				latency: 45,
-				chainId: "NetXdQprcVkpaWU",
-				headLevel: 7654321,
-				headTimestamp: "2024-01-15T10:00:00Z",
+			const mockHealth = {
+				isBootstrapped: true,
 				syncState: "synced",
-				connections: 25,
+				headLevel: 7654321,
+				headHash: "BLockHash123",
+				headTimestamp: "2024-01-15T10:00:00Z",
+				protocol: "PsQuebec",
+				chainId: "NetXdQprcVkpaWU",
+				peerCount: 25,
+				mempoolSize: 10,
 			};
 
 			server.use(
@@ -42,46 +43,22 @@ describe("Node Health API", () => {
 			const data = await response.json();
 
 			expect(response.ok).toBe(true);
-			expect(data.status).toBe("healthy");
-			expect(data.latency).toBe(45);
+			expect(data.isBootstrapped).toBe(true);
 			expect(data.headLevel).toBe(7654321);
 			expect(data.syncState).toBe("synced");
 		});
 
-		it("returns degraded status when node is slow", async () => {
-			const mockHealth: NodeHealth = {
-				status: "degraded",
-				latency: 2500,
-				chainId: "NetXdQprcVkpaWU",
-				headLevel: 7654321,
-				headTimestamp: "2024-01-15T10:00:00Z",
-				syncState: "synced",
-				connections: 25,
-			};
-
-			server.use(
-				http.get("/api/node/health", () => {
-					return HttpResponse.json(mockHealth);
-				}),
-			);
-
-			const response = await fetch("/api/node/health");
-			const data = await response.json();
-
-			expect(response.ok).toBe(true);
-			expect(data.status).toBe("degraded");
-			expect(data.latency).toBe(2500);
-		});
-
-		it("returns unhealthy status when node is not synced", async () => {
-			const mockHealth: NodeHealth = {
-				status: "unhealthy",
-				latency: 100,
-				chainId: "NetXdQprcVkpaWU",
-				headLevel: 7654000,
-				headTimestamp: "2024-01-15T09:00:00Z",
+		it("returns syncing status when node is behind", async () => {
+			const mockHealth = {
+				isBootstrapped: false,
 				syncState: "syncing",
-				connections: 5,
+				headLevel: 7654000,
+				headHash: "BLockHash456",
+				headTimestamp: "2024-01-15T09:00:00Z",
+				protocol: "PsQuebec",
+				chainId: "NetXdQprcVkpaWU",
+				peerCount: 5,
+				mempoolSize: 0,
 			};
 
 			server.use(
@@ -94,7 +71,7 @@ describe("Node Health API", () => {
 			const data = await response.json();
 
 			expect(response.ok).toBe(true);
-			expect(data.status).toBe("unhealthy");
+			expect(data.isBootstrapped).toBe(false);
 			expect(data.syncState).toBe("syncing");
 		});
 

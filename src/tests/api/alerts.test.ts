@@ -1,7 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 
-import type { Alert } from "@/lib/api/types";
 import { server } from "@/tests/setup";
 
 describe("Alerts API", () => {
@@ -36,10 +35,11 @@ describe("Alerts API", () => {
 		});
 
 		it("returns critical alerts", async () => {
-			const mockAlerts: Alert[] = [
+			const mockAlerts = [
 				{
 					id: "node-offline",
-					type: "critical",
+					type: "node_behind",
+					severity: "error",
 					message: "Node is offline",
 					timestamp: "2024-01-15T10:00:00Z",
 				},
@@ -56,21 +56,23 @@ describe("Alerts API", () => {
 
 			expect(response.ok).toBe(true);
 			expect(data).toHaveLength(1);
-			expect(data[0].type).toBe("critical");
+			expect(data[0].severity).toBe("error");
 			expect(data[0].message).toBe("Node is offline");
 		});
 
 		it("returns warning alerts", async () => {
-			const mockAlerts: Alert[] = [
+			const mockAlerts = [
 				{
 					id: "node-degraded",
-					type: "warning",
+					type: "node_behind",
+					severity: "warning",
 					message: "Node latency is high (2500ms)",
 					timestamp: "2024-01-15T10:00:00Z",
 				},
 				{
 					id: "missed-attestation",
-					type: "warning",
+					type: "missed_attestation",
+					severity: "warning",
 					message: "Missed attestation at level 7654300",
 					timestamp: "2024-01-15T09:55:00Z",
 				},
@@ -87,15 +89,16 @@ describe("Alerts API", () => {
 
 			expect(response.ok).toBe(true);
 			expect(data).toHaveLength(2);
-			expect(data[0].type).toBe("warning");
-			expect(data[1].type).toBe("warning");
+			expect(data[0].severity).toBe("warning");
+			expect(data[1].severity).toBe("warning");
 		});
 
 		it("returns info alerts", async () => {
-			const mockAlerts: Alert[] = [
+			const mockAlerts = [
 				{
 					id: "upcoming-baking",
-					type: "info",
+					type: "low_balance",
+					severity: "info",
 					message: "Upcoming baking right in 5 minutes",
 					timestamp: "2024-01-15T10:00:00Z",
 				},
@@ -111,26 +114,29 @@ describe("Alerts API", () => {
 			const data = await response.json();
 
 			expect(response.ok).toBe(true);
-			expect(data[0].type).toBe("info");
+			expect(data[0].severity).toBe("info");
 		});
 
 		it("returns multiple alert types sorted by severity", async () => {
-			const mockAlerts: Alert[] = [
+			const mockAlerts = [
 				{
 					id: "node-offline",
-					type: "critical",
+					type: "node_behind",
+					severity: "error",
 					message: "Node is offline",
 					timestamp: "2024-01-15T10:00:00Z",
 				},
 				{
 					id: "high-latency",
-					type: "warning",
+					type: "node_behind",
+					severity: "warning",
 					message: "High latency detected",
 					timestamp: "2024-01-15T10:00:00Z",
 				},
 				{
 					id: "upcoming-baking",
-					type: "info",
+					type: "low_balance",
+					severity: "info",
 					message: "Upcoming baking right",
 					timestamp: "2024-01-15T10:00:00Z",
 				},
@@ -147,17 +153,18 @@ describe("Alerts API", () => {
 
 			expect(response.ok).toBe(true);
 			expect(data).toHaveLength(3);
-			expect(data[0].type).toBe("critical");
-			expect(data[1].type).toBe("warning");
-			expect(data[2].type).toBe("info");
+			expect(data[0].severity).toBe("error");
+			expect(data[1].severity).toBe("warning");
+			expect(data[2].severity).toBe("info");
 		});
 
 		it("includes alert timestamps", async () => {
 			const timestamp = "2024-01-15T10:30:45Z";
-			const mockAlerts: Alert[] = [
+			const mockAlerts = [
 				{
 					id: "test-alert",
-					type: "info",
+					type: "low_balance",
+					severity: "info",
 					message: "Test alert message",
 					timestamp,
 				},

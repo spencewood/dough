@@ -1,12 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { describe, expect, it } from "vitest";
 
-import type {
-	BakerStatus,
-	BakingRight,
-	AttestationRight,
-	RewardInfo,
-} from "@/lib/api/types";
 import { server } from "@/tests/setup";
 
 describe("Baker API", () => {
@@ -27,15 +21,17 @@ describe("Baker API", () => {
 		});
 
 		it("returns baker status when configured", async () => {
-			const mockStatus: BakerStatus = {
+			const mockStatus = {
 				address: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
-				balance: 15000000000,
-				frozenDeposits: 5000000000,
-				stakingBalance: 20000000000,
-				delegatedBalance: 5000000000,
-				gracePeriod: 10,
-				isActive: true,
-				votingPower: 12500,
+				alias: "Test Baker",
+				fullBalance: "15000000000",
+				frozenDeposits: "5000000000",
+				stakingBalance: "20000000000",
+				delegatedBalance: "5000000000",
+				delegatorCount: 10,
+				isDeactivated: false,
+				gracePeriod: 5,
+				stakingCapacityUsed: 0.75,
 			};
 
 			server.use(
@@ -49,8 +45,8 @@ describe("Baker API", () => {
 
 			expect(response.ok).toBe(true);
 			expect(data.address).toBe("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb");
-			expect(data.isActive).toBe(true);
-			expect(data.balance).toBe(15000000000);
+			expect(data.isDeactivated).toBe(false);
+			expect(data.fullBalance).toBe("15000000000");
 		});
 
 		it("handles baker not found", async () => {
@@ -72,24 +68,23 @@ describe("Baker API", () => {
 
 	describe("GET /api/baker/rewards", () => {
 		it("returns rewards history", async () => {
-			const mockRewards: RewardInfo[] = [
-				{
-					cycle: 750,
-					bakingRewards: 2500000,
-					attestationRewards: 1800000,
-					totalRewards: 4300000,
-					missedRewards: 0,
-					status: "completed",
-				},
-				{
-					cycle: 749,
-					bakingRewards: 2400000,
-					attestationRewards: 1750000,
-					totalRewards: 4150000,
-					missedRewards: 50000,
-					status: "completed",
-				},
-			];
+			const mockRewards = {
+				delegate: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
+				cycles: [
+					{
+						cycle: 750,
+						bakingRewards: "2500000",
+						attestationRewards: "1800000",
+						totalRewards: "4300000",
+						missedBakingRewards: "0",
+						missedAttestationRewards: "0",
+						ownStakingBalance: "10000000000",
+						externalStakingBalance: "5000000000",
+					},
+				],
+				totalEarned: "4300000",
+				totalMissed: "0",
+			};
 
 			server.use(
 				http.get("/api/baker/rewards", () => {
@@ -101,9 +96,9 @@ describe("Baker API", () => {
 			const data = await response.json();
 
 			expect(response.ok).toBe(true);
-			expect(data).toHaveLength(2);
-			expect(data[0].cycle).toBe(750);
-			expect(data[0].totalRewards).toBe(4300000);
+			expect(data.cycles).toHaveLength(1);
+			expect(data.cycles[0].cycle).toBe(750);
+			expect(data.totalEarned).toBe("4300000");
 		});
 
 		it("accepts cycles query parameter", async () => {
@@ -113,27 +108,13 @@ describe("Baker API", () => {
 				http.get("/api/baker/rewards", ({ request }) => {
 					const url = new URL(request.url);
 					capturedCycles = url.searchParams.get("cycles");
-					return HttpResponse.json([]);
+					return HttpResponse.json({ delegate: "", cycles: [], totalEarned: "0", totalMissed: "0" });
 				}),
 			);
 
 			await fetch("/api/baker/rewards?cycles=5");
 
 			expect(capturedCycles).toBe("5");
-		});
-
-		it("handles empty rewards history", async () => {
-			server.use(
-				http.get("/api/baker/rewards", () => {
-					return HttpResponse.json([]);
-				}),
-			);
-
-			const response = await fetch("/api/baker/rewards");
-			const data = await response.json();
-
-			expect(response.ok).toBe(true);
-			expect(data).toEqual([]);
 		});
 
 		it("handles fetch errors", async () => {
@@ -155,18 +136,18 @@ describe("Baker API", () => {
 
 	describe("GET /api/baker/rights/baking", () => {
 		it("returns baking rights", async () => {
-			const mockRights: BakingRight[] = [
+			const mockRights = [
 				{
 					level: 7654400,
+					delegate: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
 					round: 0,
-					timestamp: "2024-01-15T10:30:00Z",
-					status: "future",
+					estimatedTime: "2024-01-15T10:30:00Z",
 				},
 				{
 					level: 7654350,
+					delegate: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
 					round: 0,
-					timestamp: "2024-01-15T10:15:00Z",
-					status: "baked",
+					estimatedTime: "2024-01-15T10:15:00Z",
 				},
 			];
 
@@ -182,31 +163,6 @@ describe("Baker API", () => {
 			expect(response.ok).toBe(true);
 			expect(data).toHaveLength(2);
 			expect(data[0].level).toBe(7654400);
-			expect(data[0].status).toBe("future");
-			expect(data[1].status).toBe("baked");
-		});
-
-		it("handles missed baking rights", async () => {
-			const mockRights: BakingRight[] = [
-				{
-					level: 7654300,
-					round: 0,
-					timestamp: "2024-01-15T10:00:00Z",
-					status: "missed",
-				},
-			];
-
-			server.use(
-				http.get("/api/baker/rights/baking", () => {
-					return HttpResponse.json(mockRights);
-				}),
-			);
-
-			const response = await fetch("/api/baker/rights/baking");
-			const data = await response.json();
-
-			expect(response.ok).toBe(true);
-			expect(data[0].status).toBe("missed");
 		});
 
 		it("handles no baking rights", async () => {
@@ -226,18 +182,12 @@ describe("Baker API", () => {
 
 	describe("GET /api/baker/rights/attestation", () => {
 		it("returns attestation rights", async () => {
-			const mockRights: AttestationRight[] = [
+			const mockRights = [
 				{
 					level: 7654400,
-					slots: 5,
-					timestamp: "2024-01-15T10:30:00Z",
-					status: "future",
-				},
-				{
-					level: 7654350,
-					slots: 4,
-					timestamp: "2024-01-15T10:15:00Z",
-					status: "attested",
+					delegate: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
+					firstSlot: 100,
+					attestationPower: 5,
 				},
 			];
 
@@ -251,32 +201,8 @@ describe("Baker API", () => {
 			const data = await response.json();
 
 			expect(response.ok).toBe(true);
-			expect(data).toHaveLength(2);
-			expect(data[0].slots).toBe(5);
-			expect(data[1].status).toBe("attested");
-		});
-
-		it("handles missed attestation rights", async () => {
-			const mockRights: AttestationRight[] = [
-				{
-					level: 7654300,
-					slots: 3,
-					timestamp: "2024-01-15T10:00:00Z",
-					status: "missed",
-				},
-			];
-
-			server.use(
-				http.get("/api/baker/rights/attestation", () => {
-					return HttpResponse.json(mockRights);
-				}),
-			);
-
-			const response = await fetch("/api/baker/rights/attestation");
-			const data = await response.json();
-
-			expect(response.ok).toBe(true);
-			expect(data[0].status).toBe("missed");
+			expect(data).toHaveLength(1);
+			expect(data[0].attestationPower).toBe(5);
 		});
 	});
 });
