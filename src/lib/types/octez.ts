@@ -46,6 +46,17 @@ export interface BakerStatus {
 	isDeactivated: boolean;
 	gracePeriod: number;
 	stakingCapacityUsed: number;
+	hasPendingDenunciations: boolean;
+}
+
+/** Baker participation stats for current cycle */
+export interface BakerParticipation {
+	expectedCycleActivity: number;
+	minimalCycleActivity: number;
+	missedSlots: number;
+	missedLevels: number;
+	remainingAllowedMissedSlots: number;
+	expectedAttestingRewards: string;
 }
 
 /** Network connection info (simplified from RPC) */

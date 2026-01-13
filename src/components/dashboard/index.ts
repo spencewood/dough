@@ -4,5 +4,6 @@ export { DalStatusCard } from "./DalStatusCard";
 export { Header } from "./Header";
 export { NetworkStatsCard } from "./NetworkStatsCard";
 export { NodeHealthCard } from "./NodeHealthCard";
+export { ParticipationCard } from "./ParticipationCard";
 export { RewardsCard } from "./RewardsCard";
 export { RightsCard } from "./RightsCard";

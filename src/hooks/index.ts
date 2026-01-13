@@ -1,5 +1,6 @@
 export { useAlerts } from "./useAlerts";
 export { useAttestationRights } from "./useAttestationRights";
+export { useBakerParticipation } from "./useBakerParticipation";
 export { useBakerStatus } from "./useBakerStatus";
 export { useBakingRights } from "./useBakingRights";
 export { useBlockStream } from "./useBlockStream";

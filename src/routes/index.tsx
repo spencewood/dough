@@ -8,6 +8,7 @@ import {
 	Header,
 	NetworkStatsCard,
 	NodeHealthCard,
+	ParticipationCard,
 	RewardsCard,
 	RightsCard,
 } from "@/components/dashboard";
@@ -16,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
 	useAlerts,
 	useAttestationRights,
+	useBakerParticipation,
 	useBakerStatus,
 	useBakingRights,
 	useBlockStream,
@@ -32,6 +34,7 @@ function Dashboard() {
 	const { data: settings, isLoading: settingsLoading } = useSettings();
 	const nodeHealth = useNodeHealth();
 	const bakerStatus = useBakerStatus();
+	const bakerParticipation = useBakerParticipation();
 	const bakingRights = useBakingRights();
 	const attestationRights = useAttestationRights();
 	const rewards = useRewards();
@@ -60,6 +63,7 @@ function Dashboard() {
 	const hasError =
 		nodeHealth.error ||
 		bakerStatus.error ||
+		bakerParticipation.error ||
 		bakingRights.error ||
 		attestationRights.error ||
 		rewards.error ||
@@ -106,6 +110,15 @@ function Dashboard() {
 						/>
 					</CardErrorBoundary>
 					<CardErrorBoundary
+						cardTitle="Participation"
+						onRetry={() => bakerParticipation.refetch()}
+					>
+						<ParticipationCard
+							data={bakerParticipation.data}
+							isLoading={bakerParticipation.isLoading}
+						/>
+					</CardErrorBoundary>
+					<CardErrorBoundary
 						cardTitle="Rights"
 						onRetry={() => {
 							bakingRights.refetch();
@@ -146,6 +159,7 @@ function Dashboard() {
 						<p className="text-destructive text-sm">
 							{nodeHealth.error?.message ||
 								bakerStatus.error?.message ||
+								bakerParticipation.error?.message ||
 								bakingRights.error?.message ||
 								attestationRights.error?.message ||
 								rewards.error?.message ||

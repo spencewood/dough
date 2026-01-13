@@ -1,4 +1,4 @@
-import { Coins, Users, Wallet } from "lucide-react";
+import { AlertTriangle, Coins, Users, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -77,6 +77,15 @@ export function BakerStatusCard({ data, isLoading }: BakerStatusCardProps) {
 			</CardHeader>
 			<CardContent>
 				<div className="space-y-4">
+					{data.hasPendingDenunciations && (
+						<div className="flex items-center gap-2 p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+							<AlertTriangle className="h-4 w-4 text-destructive" />
+							<span className="text-sm text-destructive font-medium">
+								Pending denunciations - slashing imminent
+							</span>
+						</div>
+					)}
+
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							Status

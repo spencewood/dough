@@ -205,4 +205,62 @@ describe("Baker API", () => {
 			expect(data[0].attestationPower).toBe(5);
 		});
 	});
+
+	describe("GET /api/baker/participation", () => {
+		it("returns participation stats", async () => {
+			const mockParticipation = {
+				expectedCycleActivity: 1000,
+				minimalCycleActivity: 800,
+				missedSlots: 5,
+				missedLevels: 2,
+				remainingAllowedMissedSlots: 195,
+				expectedAttestingRewards: "2500000000",
+			};
+
+			server.use(
+				http.get("/api/baker/participation", () => {
+					return HttpResponse.json(mockParticipation);
+				}),
+			);
+
+			const response = await fetch("/api/baker/participation");
+			const data = await response.json();
+
+			expect(response.ok).toBe(true);
+			expect(data.expectedCycleActivity).toBe(1000);
+			expect(data.missedSlots).toBe(5);
+			expect(data.remainingAllowedMissedSlots).toBe(195);
+		});
+
+		it("returns 503 when not configured", async () => {
+			server.use(
+				http.get("/api/baker/participation", () => {
+					return new HttpResponse(JSON.stringify({ error: "Not configured" }), {
+						status: 503,
+					});
+				}),
+			);
+
+			const response = await fetch("/api/baker/participation");
+
+			expect(response.ok).toBe(false);
+			expect(response.status).toBe(503);
+		});
+
+		it("handles fetch errors", async () => {
+			server.use(
+				http.get("/api/baker/participation", () => {
+					return new HttpResponse(
+						JSON.stringify({ error: "Failed to fetch participation" }),
+						{ status: 502 },
+					);
+				}),
+			);
+
+			const response = await fetch("/api/baker/participation");
+
+			expect(response.ok).toBe(false);
+			expect(response.status).toBe(502);
+		});
+	});
 });

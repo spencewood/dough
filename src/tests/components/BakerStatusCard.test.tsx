@@ -15,6 +15,7 @@ const mockBakerStatus: BakerStatus = {
 	gracePeriod: 5,
 	isDeactivated: false,
 	stakingCapacityUsed: 75.5,
+	hasPendingDenunciations: false,
 };
 
 describe("BakerStatusCard", () => {
@@ -146,5 +147,26 @@ describe("BakerStatusCard", () => {
 		render(<BakerStatusCard data={zeroBalance} />);
 
 		expect(screen.getByText("0.00 XTZ")).toBeInTheDocument();
+	});
+
+	it("does not show denunciation warning when none pending", () => {
+		render(<BakerStatusCard data={mockBakerStatus} />);
+
+		expect(
+			screen.queryByText(/pending denunciations/i),
+		).not.toBeInTheDocument();
+	});
+
+	it("shows denunciation warning when pending", () => {
+		const withDenunciations: BakerStatus = {
+			...mockBakerStatus,
+			hasPendingDenunciations: true,
+		};
+
+		render(<BakerStatusCard data={withDenunciations} />);
+
+		expect(
+			screen.getByText(/pending denunciations/i),
+		).toBeInTheDocument();
 	});
 });

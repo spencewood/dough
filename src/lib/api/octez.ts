@@ -1,5 +1,6 @@
 import type {
 	AttestationRight,
+	BakerParticipation,
 	BakerStatus,
 	BakingRight,
 	NetworkStats,
@@ -101,6 +102,7 @@ export async function getBakerStatus(): Promise<BakerStatus> {
 		// Common fields
 		deactivated: boolean;
 		grace_period: number;
+		pending_denunciations: boolean;
 	}>(`/chains/main/blocks/head/context/delegates/${address}`);
 
 	// Support both old and new field names
@@ -133,6 +135,33 @@ export async function getBakerStatus(): Promise<BakerStatus> {
 		gracePeriod: delegate.grace_period,
 		isDeactivated: delegate.deactivated,
 		stakingCapacityUsed,
+		hasPendingDenunciations: delegate.pending_denunciations,
+	};
+}
+
+/** Get baker participation stats for current cycle */
+export async function getBakerParticipation(): Promise<BakerParticipation> {
+	const address = config.bakerAddress;
+	if (!address) {
+		throw new Error("BAKER_ADDRESS not configured");
+	}
+
+	const participation = await nodeRpc<{
+		expected_cycle_activity: number;
+		minimal_cycle_activity: number;
+		missed_slots: number;
+		missed_levels: number;
+		remaining_allowed_missed_slots: number;
+		expected_attesting_rewards: string;
+	}>(`/chains/main/blocks/head/context/delegates/${address}/participation`);
+
+	return {
+		expectedCycleActivity: participation.expected_cycle_activity,
+		minimalCycleActivity: participation.minimal_cycle_activity,
+		missedSlots: participation.missed_slots,
+		missedLevels: participation.missed_levels,
+		remainingAllowedMissedSlots: participation.remaining_allowed_missed_slots,
+		expectedAttestingRewards: participation.expected_attesting_rewards,
 	};
 }
 
