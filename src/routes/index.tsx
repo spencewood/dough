@@ -81,6 +81,7 @@ function Dashboard() {
 
 			<main className="container mx-auto p-4 md:p-6">
 				<div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{/* Row 1: Time-sensitive info */}
 					<CardErrorBoundary
 						cardTitle="Network"
 						onRetry={() => networkStats.refetch()}
@@ -92,13 +93,10 @@ function Dashboard() {
 						/>
 					</CardErrorBoundary>
 					<CardErrorBoundary
-						cardTitle="Node Health"
-						onRetry={() => nodeHealth.refetch()}
+						cardTitle="Rewards"
+						onRetry={() => rewards.refetch()}
 					>
-						<NodeHealthCard
-							data={nodeHealth.data}
-							isLoading={nodeHealth.isLoading}
-						/>
+						<RewardsCard data={rewards.data} isLoading={rewards.isLoading} />
 					</CardErrorBoundary>
 					<CardErrorBoundary
 						cardTitle="Baker Status"
@@ -109,6 +107,8 @@ function Dashboard() {
 							isLoading={bakerStatus.isLoading}
 						/>
 					</CardErrorBoundary>
+
+					{/* Row 2: Performance & upcoming */}
 					<CardErrorBoundary
 						cardTitle="Participation"
 						onRetry={() => bakerParticipation.refetch()}
@@ -132,11 +132,16 @@ function Dashboard() {
 						/>
 					</CardErrorBoundary>
 					<CardErrorBoundary
-						cardTitle="Rewards"
-						onRetry={() => rewards.refetch()}
+						cardTitle="Node Health"
+						onRetry={() => nodeHealth.refetch()}
 					>
-						<RewardsCard data={rewards.data} isLoading={rewards.isLoading} />
+						<NodeHealthCard
+							data={nodeHealth.data}
+							isLoading={nodeHealth.isLoading}
+						/>
 					</CardErrorBoundary>
+
+					{/* Row 3: Technical status */}
 					<CardErrorBoundary
 						cardTitle="DAL Status"
 						onRetry={() => dalStatus.refetch()}
