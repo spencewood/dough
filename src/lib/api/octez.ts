@@ -198,3 +198,210 @@ export async function getDalStatus() {
 		};
 	}
 }
+
+/** TzKT reward response for a cycle */
+interface TzKTRewardResponse {
+	cycle: number;
+	stakingBalance: number;
+	delegatedBalance: number;
+	numDelegators: number;
+	expectedBlocks: number;
+	expectedEndorsements: number;
+	futureBlocks: number;
+	futureBlockRewards: number;
+	blocks: number;
+	blockRewards: number;
+	missedBlocks: number;
+	missedBlockRewards: number;
+	futureEndorsements: number;
+	futureEndorsementRewards: number;
+	endorsements: number;
+	endorsementRewards: number;
+	missedEndorsements: number;
+	missedEndorsementRewards: number;
+}
+
+/** Get rewards history from TzKT API */
+export async function getRewardsHistory(
+	numCycles = 10,
+): Promise<import("@/lib/types").RewardsHistory> {
+	const address = config.bakerAddress;
+	if (!address) {
+		throw new Error("BAKER_ADDRESS not configured");
+	}
+
+	const tzktUrl = config.tzktApiUrl;
+
+	// Fetch rewards from TzKT
+	const response = await fetchRpc<TzKTRewardResponse[]>(
+		tzktUrl,
+		`/v1/rewards/bakers/${address}?limit=${numCycles}&sort.desc=cycle`,
+	);
+
+	const cycles = response.map((r) => ({
+		cycle: r.cycle,
+		bakingRewards: (r.blockRewards * 1_000_000).toString(), // Convert to mutez
+		attestationRewards: (r.endorsementRewards * 1_000_000).toString(),
+		totalRewards: (
+			(r.blockRewards + r.endorsementRewards) *
+			1_000_000
+		).toString(),
+		missedBakingRewards: (r.missedBlockRewards * 1_000_000).toString(),
+		missedAttestationRewards: (
+			r.missedEndorsementRewards * 1_000_000
+		).toString(),
+		ownStakingBalance: (
+			(r.stakingBalance - r.delegatedBalance) *
+			1_000_000
+		).toString(),
+		externalStakingBalance: (r.delegatedBalance * 1_000_000).toString(),
+	}));
+
+	const totalEarned = cycles
+		.reduce((sum, c) => sum + BigInt(c.totalRewards), BigInt(0))
+		.toString();
+	const totalMissed = cycles
+		.reduce(
+			(sum, c) =>
+				sum +
+				BigInt(c.missedBakingRewards) +
+				BigInt(c.missedAttestationRewards),
+			BigInt(0),
+		)
+		.toString();
+
+	return {
+		delegate: address,
+		cycles,
+		totalEarned,
+		totalMissed,
+	};
+}
+
+/** Generate alerts based on current node and baker status */
+export async function getAlerts(): Promise<
+	import("@/lib/types").AlertsResponse
+> {
+	const alerts: import("@/lib/types").Alert[] = [];
+	const now = new Date().toISOString();
+
+	try {
+		// Check node health
+		const nodeHealth = await getNodeHealth().catch(() => null);
+
+		if (!nodeHealth) {
+			alerts.push({
+				id: `node-unreachable-${Date.now()}`,
+				type: "node_behind",
+				severity: "error",
+				message: "Cannot connect to Octez node",
+				timestamp: now,
+			});
+		} else {
+			// Check sync state
+			if (nodeHealth.syncState === "stale") {
+				alerts.push({
+					id: `node-stale-${Date.now()}`,
+					type: "node_behind",
+					severity: "error",
+					message: `Node is stale at level ${nodeHealth.headLevel.toLocaleString()}`,
+					timestamp: now,
+					level: nodeHealth.headLevel,
+				});
+			} else if (nodeHealth.syncState === "syncing") {
+				alerts.push({
+					id: `node-syncing-${Date.now()}`,
+					type: "node_behind",
+					severity: "warning",
+					message: "Node is still syncing",
+					timestamp: now,
+					level: nodeHealth.headLevel,
+				});
+			}
+
+			// Check if node is behind (head timestamp more than 5 minutes old)
+			const headTime = new Date(nodeHealth.headTimestamp).getTime();
+			const timeDiff = Date.now() - headTime;
+			if (timeDiff > 5 * 60 * 1000 && nodeHealth.syncState === "synced") {
+				alerts.push({
+					id: `node-behind-${Date.now()}`,
+					type: "node_behind",
+					severity: "warning",
+					message: `Node head is ${Math.floor(timeDiff / 60000)} minutes behind`,
+					timestamp: now,
+					level: nodeHealth.headLevel,
+				});
+			}
+		}
+
+		// Check baker status
+		const bakerStatus = await getBakerStatus().catch(() => null);
+
+		if (bakerStatus) {
+			// Check if deactivated
+			if (bakerStatus.isDeactivated) {
+				alerts.push({
+					id: `baker-deactivated-${Date.now()}`,
+					type: "deactivation_warning",
+					severity: "error",
+					message: "Baker is deactivated! Register to resume baking.",
+					timestamp: now,
+				});
+			}
+
+			// Check grace period warning (if within 2 cycles of deactivation)
+			if (!bakerStatus.isDeactivated && bakerStatus.gracePeriod <= 2) {
+				alerts.push({
+					id: `grace-period-warning-${Date.now()}`,
+					type: "deactivation_warning",
+					severity: "warning",
+					message: `Baker will be deactivated in ${bakerStatus.gracePeriod} cycle(s) if no baking occurs`,
+					timestamp: now,
+				});
+			}
+
+			// Check low balance (less than 6000 XTZ recommended minimum)
+			const balance = Number(bakerStatus.fullBalance) / 1_000_000;
+			if (balance < 6000) {
+				alerts.push({
+					id: `low-balance-${Date.now()}`,
+					type: "low_balance",
+					severity: balance < 1000 ? "error" : "warning",
+					message: `Low baker balance: ${balance.toLocaleString()} XTZ`,
+					timestamp: now,
+				});
+			}
+
+			// Check overstaking (capacity > 90%)
+			if (bakerStatus.stakingCapacityUsed > 90) {
+				alerts.push({
+					id: `overstaking-warning-${Date.now()}`,
+					type: "low_balance",
+					severity: bakerStatus.stakingCapacityUsed > 100 ? "error" : "warning",
+					message: `Staking capacity at ${bakerStatus.stakingCapacityUsed.toFixed(1)}%`,
+					timestamp: now,
+				});
+			}
+		}
+
+		// Check DAL status
+		const dalStatus = await getDalStatus().catch(() => null);
+
+		if (dalStatus && !dalStatus.isConnected && config.dalNodeUrl) {
+			alerts.push({
+				id: `dal-disconnected-${Date.now()}`,
+				type: "dal_disconnected",
+				severity: "warning",
+				message: "DAL node is not connected",
+				timestamp: now,
+			});
+		}
+	} catch (error) {
+		console.error("Error generating alerts:", error);
+	}
+
+	return {
+		alerts,
+		unreadCount: alerts.filter((a) => a.severity === "error").length,
+	};
+}
