@@ -9,6 +9,8 @@ import {
 import { render } from "@testing-library/react";
 import type { ReactElement } from "react";
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 // Create a minimal router context for testing components that use Link
 function createTestRouter() {
 	const rootRoute = createRootRoute({});
@@ -47,7 +49,9 @@ export function renderWithProviders(ui: ReactElement) {
 
 	const result = render(
 		<RouterContextProvider router={router}>
-			<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+			<QueryClientProvider client={queryClient}>
+				<TooltipProvider delayDuration={0}>{ui}</TooltipProvider>
+			</QueryClientProvider>
 		</RouterContextProvider>,
 	);
 

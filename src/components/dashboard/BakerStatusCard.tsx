@@ -1,4 +1,4 @@
-import { AlertTriangle, Coins, Users, Wallet } from "lucide-react";
+import { AlertTriangle, Coins, HelpCircle, Users, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -8,7 +8,25 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { BakerStatus } from "@/lib/types";
+
+function InfoTooltip({ text }: { text: string }) {
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<HelpCircle className="h-3 w-3 cursor-help text-muted-foreground" />
+			</TooltipTrigger>
+			<TooltipContent>
+				<p className="max-w-[200px]">{text}</p>
+			</TooltipContent>
+		</Tooltip>
+	);
+}
 
 interface BakerStatusCardProps {
 	data?: BakerStatus;
@@ -135,6 +153,7 @@ export function BakerStatusCard({ data, isLoading }: BakerStatusCardProps) {
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							Capacity Used
+							<InfoTooltip text="How much of your staking capacity is being used. Capacity is 9x your own stake. Over 100% means overstaked." />
 						</div>
 						<div className="flex items-center gap-2">
 							<div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
@@ -154,6 +173,7 @@ export function BakerStatusCard({ data, isLoading }: BakerStatusCardProps) {
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							Grace Period
+							<InfoTooltip text="Cycles remaining before deactivation if no baking occurs. Resets when you bake a block." />
 						</div>
 						<Badge variant="outline">{data.gracePeriod} cycles</Badge>
 					</div>

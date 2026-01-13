@@ -11,6 +11,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect, useState } from "react";
 
 import { GlobalErrorFallback } from "@/components/ui/error-boundary";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type { RouterContext } from "@/router";
 import appCss from "@/styles.css?url";
 
@@ -65,7 +66,9 @@ function RootComponent() {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<Outlet />
+			<TooltipProvider delayDuration={300}>
+				<Outlet />
+			</TooltipProvider>
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	);

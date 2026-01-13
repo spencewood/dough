@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
 import { RewardsCard } from "@/components/dashboard/RewardsCard";
@@ -82,29 +82,34 @@ describe("RewardsCard", () => {
 		render(<RewardsCard data={mockRewardsHistory} />);
 
 		expect(screen.getByText("Rewards History")).toBeInTheDocument();
-		expect(
-			screen.getByText("Earnings by cycle (last 10 cycles)"),
-		).toBeInTheDocument();
+		expect(screen.getByText("Last 2 cycles")).toBeInTheDocument();
 		expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
 	});
 
-	it("displays total earned", () => {
+	it("displays total earned in header", () => {
 		render(<RewardsCard data={mockRewardsHistory} />);
 
-		expect(screen.getByText("Total Earned:")).toBeInTheDocument();
-		// 29000000000 mutez = 29,000 XTZ
-		expect(screen.getByText("29,000 XTZ")).toBeInTheDocument();
+		// 29000000000 mutez = 29K XTZ (compact format)
+		expect(screen.getByText("29.0K XTZ")).toBeInTheDocument();
+		expect(screen.getByText("total earned")).toBeInTheDocument();
 	});
 
-	it("displays total missed when greater than zero", () => {
+	it("displays stats row with avg, trend, and efficiency", () => {
 		render(<RewardsCard data={mockRewardsHistory} />);
 
-		expect(screen.getByText("Total Missed:")).toBeInTheDocument();
-		// 500000000 mutez = 500 XTZ
-		expect(screen.getByText("500 XTZ")).toBeInTheDocument();
+		expect(screen.getByText("avg/cycle")).toBeInTheDocument();
+		expect(screen.getByText("trend")).toBeInTheDocument();
+		expect(screen.getByText("efficiency")).toBeInTheDocument();
 	});
 
-	it("hides total missed when zero", () => {
+	it("displays total missed badge when greater than zero", () => {
+		render(<RewardsCard data={mockRewardsHistory} />);
+
+		// 500000000 mutez = 500 XTZ (compact shows 500.0)
+		expect(screen.getByText("500.0 XTZ missed")).toBeInTheDocument();
+	});
+
+	it("hides total missed badge when zero", () => {
 		const dataWithNoMissed: RewardsHistory = {
 			...mockRewardsHistory,
 			totalMissed: "0",
@@ -112,7 +117,7 @@ describe("RewardsCard", () => {
 
 		render(<RewardsCard data={dataWithNoMissed} />);
 
-		expect(screen.queryByText("Total Missed:")).not.toBeInTheDocument();
+		expect(screen.queryByText(/missed/)).not.toBeInTheDocument();
 	});
 
 	it("displays legend items", () => {

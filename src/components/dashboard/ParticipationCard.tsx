@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle, HelpCircle, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -8,7 +8,25 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { BakerParticipation } from "@/lib/types";
+
+function InfoTooltip({ text }: { text: string }) {
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<HelpCircle className="h-3 w-3 cursor-help text-muted-foreground" />
+			</TooltipTrigger>
+			<TooltipContent>
+				<p className="max-w-[200px]">{text}</p>
+			</TooltipContent>
+		</Tooltip>
+	);
+}
 
 interface ParticipationCardProps {
 	data?: BakerParticipation;
@@ -131,6 +149,7 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							<XCircle className="h-4 w-4" />
 							Missed Slots
+							<InfoTooltip text="Attestation slots where your baker failed to participate this cycle." />
 						</div>
 						<span className={`font-mono ${data.missedSlots > 0 ? "text-yellow-500" : ""}`}>
 							{data.missedSlots}
@@ -140,6 +159,7 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							Missed Levels
+							<InfoTooltip text="Block levels where all assigned attestation slots were missed." />
 						</div>
 						<span className={`font-mono ${data.missedLevels > 0 ? "text-yellow-500" : ""}`}>
 							{data.missedLevels}
@@ -151,6 +171,7 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							<CheckCircle className="h-4 w-4" />
 							Allowed Misses Left
+							<InfoTooltip text="Remaining slots you can miss this cycle before losing attestation rewards." />
 						</div>
 						<Badge variant={isCritical ? "destructive" : isAtRisk ? "warning" : "secondary"}>
 							{data.remainingAllowedMissedSlots}
