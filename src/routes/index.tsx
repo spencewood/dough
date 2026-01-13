@@ -4,14 +4,28 @@ import {
 	BakerStatusCard,
 	Header,
 	NodeHealthCard,
+	RightsCard,
 } from "@/components/dashboard";
-import { useBakerStatus, useNodeHealth } from "@/hooks";
+import {
+	useAttestationRights,
+	useBakerStatus,
+	useBakingRights,
+	useNodeHealth,
+} from "@/hooks";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
 
 function Dashboard() {
 	const nodeHealth = useNodeHealth();
 	const bakerStatus = useBakerStatus();
+	const bakingRights = useBakingRights();
+	const attestationRights = useAttestationRights();
+
+	const hasError =
+		nodeHealth.error ||
+		bakerStatus.error ||
+		bakingRights.error ||
+		attestationRights.error;
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -31,12 +45,20 @@ function Dashboard() {
 						data={bakerStatus.data}
 						isLoading={bakerStatus.isLoading}
 					/>
+					<RightsCard
+						bakingRights={bakingRights.data}
+						attestationRights={attestationRights.data}
+						isLoading={bakingRights.isLoading || attestationRights.isLoading}
+					/>
 				</div>
 
-				{(nodeHealth.error || bakerStatus.error) && (
+				{hasError && (
 					<div className="mt-6 p-4 bg-destructive/10 border border-destructive rounded-lg">
 						<p className="text-destructive text-sm">
-							{nodeHealth.error?.message || bakerStatus.error?.message}
+							{nodeHealth.error?.message ||
+								bakerStatus.error?.message ||
+								bakingRights.error?.message ||
+								attestationRights.error?.message}
 						</p>
 					</div>
 				)}

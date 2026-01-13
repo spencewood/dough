@@ -6,7 +6,12 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!**/public/mockServiceWorker.js"]
+		"includes": [
+			"**",
+			"!**/public/mockServiceWorker.js",
+			"!**/routeTree.gen.ts",
+			"!.claude"
+		]
 	},
 	"css": {
 		"parser": {

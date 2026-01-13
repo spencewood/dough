@@ -54,7 +54,11 @@ export const getRouter = () => {
 		defaultNotFoundComponent: NotFound,
 	});
 
-	setupRouterSsrQueryIntegration({ router, queryClient, wrapQueryClient: false });
+	setupRouterSsrQueryIntegration({
+		router,
+		queryClient,
+		wrapQueryClient: false,
+	});
 
 	return router;
 };
