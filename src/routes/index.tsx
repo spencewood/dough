@@ -4,6 +4,7 @@ import {
 	BakerStatusCard,
 	Header,
 	NodeHealthCard,
+	RewardsCard,
 	RightsCard,
 } from "@/components/dashboard";
 import {
@@ -11,6 +12,7 @@ import {
 	useBakerStatus,
 	useBakingRights,
 	useNodeHealth,
+	useRewards,
 } from "@/hooks";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
@@ -20,12 +22,14 @@ function Dashboard() {
 	const bakerStatus = useBakerStatus();
 	const bakingRights = useBakingRights();
 	const attestationRights = useAttestationRights();
+	const rewards = useRewards();
 
 	const hasError =
 		nodeHealth.error ||
 		bakerStatus.error ||
 		bakingRights.error ||
-		attestationRights.error;
+		attestationRights.error ||
+		rewards.error;
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -50,6 +54,7 @@ function Dashboard() {
 						attestationRights={attestationRights.data}
 						isLoading={bakingRights.isLoading || attestationRights.isLoading}
 					/>
+					<RewardsCard data={rewards.data} isLoading={rewards.isLoading} />
 				</div>
 
 				{hasError && (
@@ -58,7 +63,8 @@ function Dashboard() {
 							{nodeHealth.error?.message ||
 								bakerStatus.error?.message ||
 								bakingRights.error?.message ||
-								attestationRights.error?.message}
+								attestationRights.error?.message ||
+								rewards.error?.message}
 						</p>
 					</div>
 				)}

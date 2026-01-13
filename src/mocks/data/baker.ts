@@ -1,4 +1,4 @@
-import type { BakerStatus } from "@/lib/types";
+import type { BakerStatus, CycleRewards, RewardsHistory } from "@/lib/types";
 
 /** Mock baker address - replace with actual in .env */
 export const MOCK_BAKER_ADDRESS = "tz1YourBakerAddressHereXXXXXXXXXXXXXXX";
@@ -82,3 +82,71 @@ export const mockAttestationRights = [
 		],
 	},
 ];
+
+/** Generate mock cycle rewards for the past N cycles */
+function generateMockCycleRewards(numCycles: number): CycleRewards[] {
+	const currentCycle = 750; // Approximate current mainnet cycle
+	const cycles: CycleRewards[] = [];
+
+	for (let i = 0; i < numCycles; i++) {
+		const cycle = currentCycle - i;
+		// Randomize rewards slightly for realism
+		const baseReward = 15_000_000_000; // ~15 XTZ base
+		const variance = Math.random() * 0.3 + 0.85; // 85% - 115%
+
+		const bakingRewards = Math.floor(baseReward * 0.4 * variance).toString();
+		const attestationRewards = Math.floor(
+			baseReward * 0.6 * variance,
+		).toString();
+		const totalRewards = (
+			BigInt(bakingRewards) + BigInt(attestationRewards)
+		).toString();
+
+		// Occasionally miss some rewards (5% chance)
+		const missedBaking =
+			Math.random() < 0.05
+				? Math.floor(baseReward * 0.1 * Math.random()).toString()
+				: "0";
+		const missedAttestation =
+			Math.random() < 0.05
+				? Math.floor(baseReward * 0.05 * Math.random()).toString()
+				: "0";
+
+		cycles.push({
+			cycle,
+			bakingRewards,
+			attestationRewards,
+			totalRewards,
+			missedBakingRewards: missedBaking,
+			missedAttestationRewards: missedAttestation,
+			ownStakingBalance: "1000000000000", // 1M XTZ
+			externalStakingBalance: "4000000000000", // 4M XTZ
+		});
+	}
+
+	return cycles;
+}
+
+/** Mock rewards history for the past 10 cycles */
+export const mockRewardsHistory: RewardsHistory = (() => {
+	const cycles = generateMockCycleRewards(10);
+	const totalEarned = cycles
+		.reduce((sum, c) => sum + BigInt(c.totalRewards), BigInt(0))
+		.toString();
+	const totalMissed = cycles
+		.reduce(
+			(sum, c) =>
+				sum +
+				BigInt(c.missedBakingRewards) +
+				BigInt(c.missedAttestationRewards),
+			BigInt(0),
+		)
+		.toString();
+
+	return {
+		delegate: MOCK_BAKER_ADDRESS,
+		cycles,
+		totalEarned,
+		totalMissed,
+	};
+})();

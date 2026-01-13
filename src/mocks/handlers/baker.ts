@@ -5,6 +5,7 @@ import {
 	mockBakerStatus,
 	mockBakingRights,
 	mockDelegateResponse,
+	mockRewardsHistory,
 } from "../data";
 
 const OCTEZ_NODE_URL = "http://localhost:8732";
@@ -86,5 +87,10 @@ export const bakerHandlers = [
 			})),
 		);
 		return HttpResponse.json(flattenedRights);
+	}),
+
+	// API route for our dashboard - rewards history
+	http.get("/api/baker/rewards", () => {
+		return HttpResponse.json(mockRewardsHistory);
 	}),
 ];

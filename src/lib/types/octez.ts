@@ -71,3 +71,23 @@ export interface AttestationRight {
 	firstSlot: number;
 	attestationPower: number;
 }
+
+/** Rewards for a single cycle */
+export interface CycleRewards {
+	cycle: number;
+	bakingRewards: string;
+	attestationRewards: string;
+	totalRewards: string;
+	missedBakingRewards: string;
+	missedAttestationRewards: string;
+	ownStakingBalance: string;
+	externalStakingBalance: string;
+}
+
+/** Summary of rewards history */
+export interface RewardsHistory {
+	delegate: string;
+	cycles: CycleRewards[];
+	totalEarned: string;
+	totalMissed: string;
+}
