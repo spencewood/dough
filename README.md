@@ -14,6 +14,48 @@ pnpm dev
 
 The dashboard will be available at http://localhost:3000
 
+## Docker
+
+The easiest way to run Dough is with Docker. Create a `docker-compose.yml` file:
+
+**Linux** (connects to services on localhost):
+```yaml
+services:
+  dough:
+    image: spencewood/dough
+    container_name: dough
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - dough-data:/app/data
+
+volumes:
+  dough-data:
+```
+
+**macOS / Windows** (Docker Desktop):
+```yaml
+services:
+  dough:
+    image: spencewood/dough
+    container_name: dough
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - dough-data:/app/data
+
+volumes:
+  dough-data:
+```
+
+Then run:
+```bash
+docker compose up -d
+```
+
+The dashboard will be available at http://localhost:3000. Configure your node URLs and baker address through the settings interface.
+
 ## Configuration
 
 Settings can be configured via environment variables or through the in-app settings modal. See `.env.example` for available options.

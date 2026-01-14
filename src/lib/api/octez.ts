@@ -216,6 +216,18 @@ export async function getBakingRights(maxRound = 1): Promise<BakingRight[]> {
 		return [];
 	}
 
+	// Get current head level and cycle info
+	const [header, constants] = await Promise.all([
+		nodeRpc<{ level: number }>("/chains/main/blocks/head/header"),
+		nodeRpc<{ blocks_per_cycle: number }>(
+			"/chains/main/blocks/head/context/constants",
+		),
+	]);
+	const headLevel = header.level;
+
+	// Query rights for the current and next cycle (~5.6 days on mainnet)
+	const blocksPerCycle = constants.blocks_per_cycle;
+	const currentCycle = Math.floor(headLevel / blocksPerCycle);
 	const rights = await nodeRpc<
 		Array<{
 			level: number;
@@ -224,15 +236,18 @@ export async function getBakingRights(maxRound = 1): Promise<BakingRight[]> {
 			estimated_time?: string;
 		}>
 	>(
-		`/chains/main/blocks/head/helpers/baking_rights?delegate=${address}&max_round=${maxRound}`,
+		`/chains/main/blocks/head/helpers/baking_rights?delegate=${address}&max_round=${maxRound}&cycle=${currentCycle}&cycle=${currentCycle + 1}`,
 	);
 
-	return rights.map((r) => ({
-		level: r.level,
-		delegate: r.delegate,
-		round: r.round,
-		estimatedTime: r.estimated_time,
-	}));
+	// Filter to only future levels
+	return rights
+		.filter((r) => r.level > headLevel)
+		.map((r) => ({
+			level: r.level,
+			delegate: r.delegate,
+			round: r.round,
+			estimatedTime: r.estimated_time,
+		}));
 }
 
 /** Get upcoming attestation rights */
@@ -244,6 +259,18 @@ export async function getAttestationRights(
 		return [];
 	}
 
+	// Get current head level and cycle info
+	const [header, constants] = await Promise.all([
+		nodeRpc<{ level: number }>("/chains/main/blocks/head/header"),
+		nodeRpc<{ blocks_per_cycle: number }>(
+			"/chains/main/blocks/head/context/constants",
+		),
+	]);
+	const headLevel = header.level;
+
+	// Query rights for the current and next cycle (~5.6 days on mainnet)
+	const blocksPerCycle = constants.blocks_per_cycle;
+	const currentCycle = Math.floor(headLevel / blocksPerCycle);
 	const rights = await nodeRpc<
 		Array<{
 			level: number;
@@ -253,10 +280,13 @@ export async function getAttestationRights(
 				attestation_power: number;
 			}>;
 		}>
-	>(`/chains/main/blocks/head/helpers/attestation_rights?delegate=${address}`);
+	>(
+		`/chains/main/blocks/head/helpers/attestation_rights?delegate=${address}&cycle=${currentCycle}&cycle=${currentCycle + 1}`,
+	);
 
-	// Flatten the nested structure
+	// Flatten the nested structure and filter to only future levels
 	return rights
+		.filter((r) => r.level > headLevel)
 		.flatMap((r) =>
 			r.delegates.map((d) => ({
 				level: r.level,
