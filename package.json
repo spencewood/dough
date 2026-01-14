@@ -14,7 +14,7 @@
 		"format": "biome format --write .",
 		"typecheck": "tsc --noEmit",
 		"changeset": "changeset",
-		"version": "changeset version"
+		"changeset:version": "changeset version"
 	},
 	"dependencies": {
 		"@radix-ui/react-dialog": "^1.1.15",
