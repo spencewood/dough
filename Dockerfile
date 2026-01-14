@@ -24,8 +24,8 @@ RUN rm -rf .output .nitro .tanstack .vinxi && pnpm build
 # Production stage
 FROM node:22-alpine AS runner
 
-# Install runtime dependencies for better-sqlite3
-RUN apk add --no-cache libstdc++
+# Install runtime dependencies for better-sqlite3 and health checks
+RUN apk add --no-cache libstdc++ curl
 
 WORKDIR /app
 
@@ -53,7 +53,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application
 CMD ["node", ".output/server/index.mjs"]
