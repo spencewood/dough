@@ -33,6 +33,12 @@ vitest.config.ts
 .git
 .gitignore
 
+# GitHub
+.github
+
+# Changesets
+.changeset
+
 # Docker
 Dockerfile*
 docker-compose*.yml
