@@ -10,14 +10,12 @@ export interface BakerDomainResponse {
 
 interface GraphQLResponse {
 	data?: {
-		reverseRecords?: {
-			items?: Array<{
-				address: string;
-				domain?: {
-					name: string;
-				} | null;
-			}>;
-		};
+		reverseRecord?: {
+			address: string;
+			domain?: {
+				name: string;
+			} | null;
+		} | null;
 	};
 	errors?: Array<{ message: string }>;
 }
@@ -37,12 +35,10 @@ export default defineEventHandler(async (): Promise<BakerDomainResponse> => {
 	try {
 		const query = `
 			query GetReverseRecord($address: String!) {
-				reverseRecords(where: { address: { eq: $address } }) {
-					items {
-						address
-						domain {
-							name
-						}
+				reverseRecord(address: $address) {
+					address
+					domain {
+						name
 					}
 				}
 			}
@@ -81,8 +77,7 @@ export default defineEventHandler(async (): Promise<BakerDomainResponse> => {
 			};
 		}
 
-		const items = result.data?.reverseRecords?.items;
-		const domainName = items?.[0]?.domain?.name ?? null;
+		const domainName = result.data?.reverseRecord?.domain?.name ?? null;
 
 		return {
 			domain: domainName,

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -30,11 +31,20 @@ interface ChartContainerProps {
 }
 
 export function ChartContainer({ children, className }: ChartContainerProps) {
+	// ResponsiveContainer requires DOM measurements, so skip rendering on server
+	const [isMounted, setIsMounted] = useState(false);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
 	return (
 		<div className={cn("w-full h-[200px]", className)}>
-			<ResponsiveContainer width="100%" height="100%">
-				{children as React.ReactElement}
-			</ResponsiveContainer>
+			{isMounted ? (
+				<ResponsiveContainer width="100%" height="100%">
+					{children as React.ReactElement}
+				</ResponsiveContainer>
+			) : null}
 		</div>
 	);
 }
