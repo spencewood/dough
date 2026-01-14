@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { BlockInfo, BlockStreamMessage, BlockStreamState } from "@/lib/types";
+import type {
+	BlockInfo,
+	BlockStreamMessage,
+	BlockStreamState,
+} from "@/lib/types";
 
 const INITIAL_RECONNECT_DELAY = 1000;
 const MAX_RECONNECT_DELAY = 30000;
@@ -20,14 +24,18 @@ export function useBlockStream(): BlockStreamState & {
 
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY);
-	const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
 	const blockTimestampRef = useRef<number | null>(null);
 	const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	const connect = useCallback(() => {
 		// Don't connect if we already have an active connection
-		if (wsRef.current?.readyState === WebSocket.OPEN ||
-			wsRef.current?.readyState === WebSocket.CONNECTING) {
+		if (
+			wsRef.current?.readyState === WebSocket.OPEN ||
+			wsRef.current?.readyState === WebSocket.CONNECTING
+		) {
 			return;
 		}
 
@@ -71,7 +79,13 @@ export function useBlockStream(): BlockStreamState & {
 					setIsNewBlock(true);
 					setTimeout(() => setIsNewBlock(false), 500);
 
-					console.log("[useBlockStream] Block", message.block.level, "age:", initialSeconds, "s");
+					console.log(
+						"[useBlockStream] Block",
+						message.block.level,
+						"age:",
+						initialSeconds,
+						"s",
+					);
 				}
 			} catch (err) {
 				console.error("[useBlockStream] Failed to parse message:", err);
@@ -124,7 +138,9 @@ export function useBlockStream(): BlockStreamState & {
 		const updateTimer = () => {
 			if (blockTimestampRef.current) {
 				const now = Date.now();
-				const diffSeconds = Math.floor((now - blockTimestampRef.current) / 1000);
+				const diffSeconds = Math.floor(
+					(now - blockTimestampRef.current) / 1000,
+				);
 				setSecondsSinceBlock(Math.max(0, diffSeconds));
 			}
 		};

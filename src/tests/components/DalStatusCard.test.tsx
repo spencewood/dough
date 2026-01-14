@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it } from "vitest";
-
 import { DalStatusCard } from "@/components/dashboard/DalStatusCard";
 import type { DALNodeStatus } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 const mockDalStatus: DALNodeStatus = {
 	isConnected: true,

@@ -1,4 +1,10 @@
-import { BookOpen, CircleHelp, ExternalLink, FileText, Globe } from "lucide-react";
+import {
+	BookOpen,
+	CircleHelp,
+	ExternalLink,
+	FileText,
+	Globe,
+} from "lucide-react";
 
 import {
 	DropdownMenu,

@@ -50,13 +50,22 @@ export const Route = createFileRoute("/")({
 			queryClient.setQueryData(["baker", "status"], data.bakerStatus);
 		}
 		if (data.bakerParticipation) {
-			queryClient.setQueryData(["baker", "participation"], data.bakerParticipation);
+			queryClient.setQueryData(
+				["baker", "participation"],
+				data.bakerParticipation,
+			);
 		}
 		if (data.bakingRights) {
-			queryClient.setQueryData(["baker", "rights", "baking"], data.bakingRights);
+			queryClient.setQueryData(
+				["baker", "rights", "baking"],
+				data.bakingRights,
+			);
 		}
 		if (data.attestationRights) {
-			queryClient.setQueryData(["baker", "rights", "attestation"], data.attestationRights);
+			queryClient.setQueryData(
+				["baker", "rights", "attestation"],
+				data.attestationRights,
+			);
 		}
 		if (data.rewards) {
 			queryClient.setQueryData(["baker", "rewards"], data.rewards);

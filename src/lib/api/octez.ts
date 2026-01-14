@@ -46,7 +46,15 @@ function dalRpc<T>(path: string): Promise<T> {
 
 /** Get node health and sync status */
 export async function getNodeHealth(): Promise<NodeHealth> {
-	const [bootstrapped, header, connections, pendingOps, version, networkStat, memoryStat] = await Promise.all([
+	const [
+		bootstrapped,
+		header,
+		connections,
+		pendingOps,
+		version,
+		networkStat,
+		memoryStat,
+	] = await Promise.all([
 		nodeRpc<{ bootstrapped: boolean; sync_state: string }>(
 			"/chains/main/is_bootstrapped",
 		),
@@ -143,8 +151,7 @@ export async function getBakerStatus(): Promise<BakerStatus> {
 	}>(`/chains/main/blocks/head/context/delegates/${address}`);
 
 	// Support both old and new field names
-	const fullBalance =
-		delegate.own_full_balance || delegate.full_balance || "0";
+	const fullBalance = delegate.own_full_balance || delegate.full_balance || "0";
 	const frozenDeposits =
 		delegate.total_staked || delegate.current_frozen_deposits || "0";
 	const stakingBalance =
@@ -203,9 +210,7 @@ export async function getBakerParticipation(): Promise<BakerParticipation> {
 }
 
 /** Get upcoming baking rights */
-export async function getBakingRights(
-	maxRound = 1,
-): Promise<BakingRight[]> {
+export async function getBakingRights(maxRound = 1): Promise<BakingRight[]> {
 	const address = config.bakerAddress;
 	if (!address) {
 		return [];

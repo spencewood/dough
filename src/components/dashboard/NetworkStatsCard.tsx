@@ -115,7 +115,10 @@ export function NetworkStatsCard({
 					Network
 					{/* Connection indicator */}
 					{blockStream && (
-						<span className="ml-auto" title={blockStream.isConnected ? "Live" : "Reconnecting..."}>
+						<span
+							className="ml-auto"
+							title={blockStream.isConnected ? "Live" : "Reconnecting..."}
+						>
 							{blockStream.isConnected ? (
 								<Wifi className="h-4 w-4 text-green-500" />
 							) : (
@@ -143,6 +146,7 @@ export function NetworkStatsCard({
 									isNewBlock ? "animate-pulse" : ""
 								}`}
 							>
+								<title>Block time progress</title>
 								{/* Background circle */}
 								<circle
 									cx="44"

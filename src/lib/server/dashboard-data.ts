@@ -1,17 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getSettings } from "@/lib/db";
 import { config } from "@/lib/api/config";
 import {
-	getNodeHealth,
-	getBakerStatus,
-	getBakerParticipation,
-	getBakingRights,
+	getAlerts,
 	getAttestationRights,
-	getRewardsHistory,
+	getBakerParticipation,
+	getBakerStatus,
+	getBakingRights,
 	getDalStatus,
 	getNetworkStats,
-	getAlerts,
+	getNodeHealth,
+	getRewardsHistory,
 } from "@/lib/api/octez";
+import { getSettings } from "@/lib/db";
 
 /**
  * Server function to fetch all dashboard data for SSR.

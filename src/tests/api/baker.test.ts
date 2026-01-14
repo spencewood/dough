@@ -108,7 +108,12 @@ describe("Baker API", () => {
 				http.get("/api/baker/rewards", ({ request }) => {
 					const url = new URL(request.url);
 					capturedCycles = url.searchParams.get("cycles");
-					return HttpResponse.json({ delegate: "", cycles: [], totalEarned: "0", totalMissed: "0" });
+					return HttpResponse.json({
+						delegate: "",
+						cycles: [],
+						totalEarned: "0",
+						totalMissed: "0",
+					});
 				}),
 			);
 

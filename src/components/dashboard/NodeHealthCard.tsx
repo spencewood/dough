@@ -1,4 +1,12 @@
-import { Activity, ArrowDown, ArrowUp, Cpu, HardDrive, Network, Server } from "lucide-react";
+import {
+	Activity,
+	ArrowDown,
+	ArrowUp,
+	Cpu,
+	HardDrive,
+	Network,
+	Server,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -103,7 +111,9 @@ export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
 							<div className="text-right">
 								<p className="font-mono text-sm">{data.nodeVersion}</p>
 								{data.nodeCommit && (
-									<p className="text-xs text-muted-foreground">{data.nodeCommit}</p>
+									<p className="text-xs text-muted-foreground">
+										{data.nodeCommit}
+									</p>
 								)}
 							</div>
 						</div>
@@ -117,7 +127,8 @@ export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
 						<Badge variant="secondary">{data.peerCount}</Badge>
 					</div>
 
-					{(data.networkBytesRecv !== undefined || data.networkBytesSent !== undefined) && (
+					{(data.networkBytesRecv !== undefined ||
+						data.networkBytesSent !== undefined) && (
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2 text-sm text-muted-foreground">
 								Network I/O
@@ -145,7 +156,9 @@ export function NodeHealthCard({ data, isLoading }: NodeHealthCardProps) {
 								<Cpu className="h-4 w-4" />
 								Memory
 							</div>
-							<span className="font-mono text-sm">{data.memoryUsedMb.toLocaleString()} MB</span>
+							<span className="font-mono text-sm">
+								{data.memoryUsedMb.toLocaleString()} MB
+							</span>
 						</div>
 					)}
 

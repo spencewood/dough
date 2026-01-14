@@ -1,10 +1,10 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+	CardErrorBoundary,
 	ErrorBoundary,
 	ErrorFallback,
-	CardErrorBoundary,
 } from "@/components/ui/error-boundary";
 
 // Component that throws an error
@@ -54,10 +54,7 @@ describe("ErrorBoundary", () => {
 
 	it("renders custom title and description", () => {
 		render(
-			<ErrorBoundary
-				title="Custom Title"
-				description="Custom description text"
-			>
+			<ErrorBoundary title="Custom Title" description="Custom description text">
 				<ThrowError shouldThrow={true} />
 			</ErrorBoundary>,
 		);
@@ -179,9 +176,7 @@ describe("CardErrorBoundary", () => {
 		);
 
 		expect(screen.getByText("Node Health Error")).toBeInTheDocument();
-		expect(
-			screen.getByText("Failed to load node health."),
-		).toBeInTheDocument();
+		expect(screen.getByText("Failed to load node health.")).toBeInTheDocument();
 	});
 
 	it("calls onRetry when provided and try again is clicked", () => {

@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it } from "vitest";
-
 import { BakerStatusCard } from "@/components/dashboard/BakerStatusCard";
 import type { BakerStatus } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 const mockBakerStatus: BakerStatus = {
 	address: "tz1TestBakerAddressXXXXXXXXXXXXXXXXXXX",
@@ -165,8 +164,6 @@ describe("BakerStatusCard", () => {
 
 		render(<BakerStatusCard data={withDenunciations} />);
 
-		expect(
-			screen.getByText(/pending denunciations/i),
-		).toBeInTheDocument();
+		expect(screen.getByText(/pending denunciations/i)).toBeInTheDocument();
 	});
 });

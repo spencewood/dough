@@ -135,7 +135,9 @@ describe("Settings API", () => {
 					const body = (await request.json()) as Partial<SettingsInput>;
 					if (!body.nodeUrl || !body.bakerAddress) {
 						return new HttpResponse(
-							JSON.stringify({ error: "nodeUrl and bakerAddress are required" }),
+							JSON.stringify({
+								error: "nodeUrl and bakerAddress are required",
+							}),
 							{ status: 400 },
 						);
 					}
@@ -159,7 +161,9 @@ describe("Settings API", () => {
 					const body = (await request.json()) as Partial<SettingsInput>;
 					if (!body.nodeUrl || !body.bakerAddress) {
 						return new HttpResponse(
-							JSON.stringify({ error: "nodeUrl and bakerAddress are required" }),
+							JSON.stringify({
+								error: "nodeUrl and bakerAddress are required",
+							}),
 							{ status: 400 },
 						);
 					}

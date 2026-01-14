@@ -1,4 +1,10 @@
-import { Activity, AlertTriangle, CheckCircle, HelpCircle, XCircle } from "lucide-react";
+import {
+	Activity,
+	AlertTriangle,
+	CheckCircle,
+	HelpCircle,
+	XCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -85,7 +91,8 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 	// Calculate participation rate
 	const totalSlots = data.expectedCycleActivity;
 	const completedSlots = totalSlots - data.missedSlots;
-	const participationRate = totalSlots > 0 ? (completedSlots / totalSlots) * 100 : 100;
+	const participationRate =
+		totalSlots > 0 ? (completedSlots / totalSlots) * 100 : 100;
 
 	// Determine health status
 	const isAtRisk = data.remainingAllowedMissedSlots <= 10;
@@ -99,11 +106,17 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 					<Activity className="h-5 w-5" />
 					Participation
 					{isCritical ? (
-						<Badge variant="destructive" className="ml-auto">Critical</Badge>
+						<Badge variant="destructive" className="ml-auto">
+							Critical
+						</Badge>
 					) : isAtRisk ? (
-						<Badge variant="warning" className="ml-auto">At Risk</Badge>
+						<Badge variant="warning" className="ml-auto">
+							At Risk
+						</Badge>
 					) : isPerfect ? (
-						<Badge variant="success" className="ml-auto">Perfect</Badge>
+						<Badge variant="success" className="ml-auto">
+							Perfect
+						</Badge>
 					) : null}
 				</CardTitle>
 				<CardDescription>Current cycle attestation stats</CardDescription>
@@ -112,17 +125,23 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 				<div className="space-y-4">
 					{/* Warning banner if at risk */}
 					{isAtRisk && (
-						<div className={`flex items-center gap-2 p-2 rounded-md border ${
-							isCritical
-								? "bg-destructive/10 border-destructive/20"
-								: "bg-yellow-500/10 border-yellow-500/20"
-						}`}>
-							<AlertTriangle className={`h-4 w-4 ${
-								isCritical ? "text-destructive" : "text-yellow-500"
-							}`} />
-							<span className={`text-sm font-medium ${
-								isCritical ? "text-destructive" : "text-yellow-500"
-							}`}>
+						<div
+							className={`flex items-center gap-2 p-2 rounded-md border ${
+								isCritical
+									? "bg-destructive/10 border-destructive/20"
+									: "bg-yellow-500/10 border-yellow-500/20"
+							}`}
+						>
+							<AlertTriangle
+								className={`h-4 w-4 ${
+									isCritical ? "text-destructive" : "text-yellow-500"
+								}`}
+							/>
+							<span
+								className={`text-sm font-medium ${
+									isCritical ? "text-destructive" : "text-yellow-500"
+								}`}
+							>
 								Only {data.remainingAllowedMissedSlots} missed slots remaining
 							</span>
 						</div>
@@ -131,13 +150,21 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 					{/* Participation Rate */}
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
-							<span className="text-sm text-muted-foreground">Participation Rate</span>
-							<span className="font-mono font-medium">{participationRate.toFixed(1)}%</span>
+							<span className="text-sm text-muted-foreground">
+								Participation Rate
+							</span>
+							<span className="font-mono font-medium">
+								{participationRate.toFixed(1)}%
+							</span>
 						</div>
 						<div className="h-2 w-full rounded-full bg-muted/50">
 							<div
 								className={`h-2 rounded-full transition-all duration-300 ${
-									isCritical ? "bg-destructive" : isAtRisk ? "bg-yellow-500" : "bg-green-500"
+									isCritical
+										? "bg-destructive"
+										: isAtRisk
+											? "bg-yellow-500"
+											: "bg-green-500"
 								}`}
 								style={{ width: `${participationRate}%` }}
 							/>
@@ -151,7 +178,9 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 							Missed Slots
 							<InfoTooltip text="Attestation slots where your baker failed to participate this cycle." />
 						</div>
-						<span className={`font-mono ${data.missedSlots > 0 ? "text-yellow-500" : ""}`}>
+						<span
+							className={`font-mono ${data.missedSlots > 0 ? "text-yellow-500" : ""}`}
+						>
 							{data.missedSlots}
 						</span>
 					</div>
@@ -161,7 +190,9 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 							Missed Levels
 							<InfoTooltip text="Block levels where all assigned attestation slots were missed." />
 						</div>
-						<span className={`font-mono ${data.missedLevels > 0 ? "text-yellow-500" : ""}`}>
+						<span
+							className={`font-mono ${data.missedLevels > 0 ? "text-yellow-500" : ""}`}
+						>
 							{data.missedLevels}
 						</span>
 					</div>
@@ -173,7 +204,11 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 							Allowed Misses Left
 							<InfoTooltip text="Remaining slots you can miss this cycle before losing attestation rewards." />
 						</div>
-						<Badge variant={isCritical ? "destructive" : isAtRisk ? "warning" : "secondary"}>
+						<Badge
+							variant={
+								isCritical ? "destructive" : isAtRisk ? "warning" : "secondary"
+							}
+						>
 							{data.remainingAllowedMissedSlots}
 						</Badge>
 					</div>
@@ -183,7 +218,9 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							Expected Activity
 						</div>
-						<span className="font-mono text-sm">{data.expectedCycleActivity} slots</span>
+						<span className="font-mono text-sm">
+							{data.expectedCycleActivity} slots
+						</span>
 					</div>
 
 					{/* Expected Rewards */}
@@ -191,7 +228,9 @@ export function ParticipationCard({ data, isLoading }: ParticipationCardProps) {
 						<div className="flex items-center gap-2 text-sm text-muted-foreground">
 							Expected Rewards
 						</div>
-						<span className="font-mono">{formatTez(data.expectedAttestingRewards)} XTZ</span>
+						<span className="font-mono">
+							{formatTez(data.expectedAttestingRewards)} XTZ
+						</span>
 					</div>
 				</div>
 			</CardContent>

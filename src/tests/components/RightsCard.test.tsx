@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it } from "vitest";
-
 import { RightsCard } from "@/components/dashboard/RightsCard";
 import type { AttestationRight, BakingRight } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 const mockBakingRights: BakingRight[] = [
 	{

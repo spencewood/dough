@@ -1,6 +1,6 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
-import { Component, type ReactNode } from "react";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import { Component, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -138,9 +138,7 @@ export function GlobalErrorFallback({ error, reset }: ErrorComponentProps) {
 					<div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
 						<AlertTriangle className="h-8 w-8 text-destructive" />
 					</div>
-					<CardTitle className="text-destructive">
-						Application Error
-					</CardTitle>
+					<CardTitle className="text-destructive">Application Error</CardTitle>
 					<CardDescription>
 						Something went wrong. Please try again or return to the dashboard.
 					</CardDescription>

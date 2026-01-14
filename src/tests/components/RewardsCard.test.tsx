@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it, vi } from "vitest";
-
 import { RewardsCard } from "@/components/dashboard/RewardsCard";
 import type { RewardsHistory } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 // Mock recharts to avoid rendering issues in tests
 vi.mock("recharts", () => ({

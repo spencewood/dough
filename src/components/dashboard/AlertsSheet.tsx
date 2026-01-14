@@ -88,9 +88,7 @@ export function AlertsSheet({ data, isLoading }: AlertsSheetProps) {
 							</Badge>
 						)}
 					</SheetTitle>
-					<SheetDescription>
-						Recent alerts and notifications
-					</SheetDescription>
+					<SheetDescription>Recent alerts and notifications</SheetDescription>
 				</SheetHeader>
 				<div className="mt-6">
 					{isLoading ? (
@@ -102,9 +100,7 @@ export function AlertsSheet({ data, isLoading }: AlertsSheetProps) {
 					) : alerts.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-12 text-center">
 							<Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
-							<p className="text-sm text-muted-foreground">
-								No recent alerts
-							</p>
+							<p className="text-sm text-muted-foreground">No recent alerts</p>
 							<p className="text-xs text-muted-foreground/70 mt-1">
 								You're all caught up!
 							</p>

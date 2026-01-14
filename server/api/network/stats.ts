@@ -18,7 +18,9 @@ export default defineEventHandler(async () => {
 		throw createError({
 			statusCode: 502,
 			message:
-				error instanceof Error ? error.message : "Failed to fetch network stats",
+				error instanceof Error
+					? error.message
+					: "Failed to fetch network stats",
 		});
 	}
 });

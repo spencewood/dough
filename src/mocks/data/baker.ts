@@ -1,4 +1,9 @@
-import type { BakerParticipation, BakerStatus, CycleRewards, RewardsHistory } from "@/lib/types";
+import type {
+	BakerParticipation,
+	BakerStatus,
+	CycleRewards,
+	RewardsHistory,
+} from "@/lib/types";
 
 /** Mock baker address - replace with actual in .env */
 export const MOCK_BAKER_ADDRESS = "tz1YourBakerAddressHereXXXXXXXXXXXXXXX";

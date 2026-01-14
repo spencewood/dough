@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it } from "vitest";
-
 import { ParticipationCard } from "@/components/dashboard/ParticipationCard";
 import type { BakerParticipation } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 const mockParticipation: BakerParticipation = {
 	expectedCycleActivity: 1000,

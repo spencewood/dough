@@ -1,4 +1,10 @@
-import { ArrowDown, ArrowUp, HelpCircle, Minus, TrendingUp } from "lucide-react";
+import {
+	ArrowDown,
+	ArrowUp,
+	HelpCircle,
+	Minus,
+	TrendingUp,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -12,8 +18,8 @@ import {
 	BarChart,
 	CartesianGrid,
 	ChartContainer,
-	ChartTooltipContent,
 	Tooltip as ChartTooltip,
+	ChartTooltipContent,
 	XAxis,
 	YAxis,
 } from "@/components/ui/chart";
@@ -51,7 +57,8 @@ const TEZOS_BLUE = "#0D61FF";
 const TEZOS_BLUE_LIGHT = "#4A90FF";
 
 function formatXtzCompact(mutez: string | number): string {
-	const xtz = typeof mutez === "string" ? Number(BigInt(mutez)) / 1_000_000 : mutez;
+	const xtz =
+		typeof mutez === "string" ? Number(BigInt(mutez)) / 1_000_000 : mutez;
 	if (xtz >= 1_000_000) {
 		return `${(xtz / 1_000_000).toFixed(2)}M`;
 	}
@@ -103,7 +110,10 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 
 	// Filter out cycles with no rewards (future/in-progress cycles)
 	const completedCycles = data.cycles.filter(
-		(c) => BigInt(c.totalRewards) > 0 || BigInt(c.missedBakingRewards) > 0 || BigInt(c.missedAttestationRewards) > 0
+		(c) =>
+			BigInt(c.totalRewards) > 0 ||
+			BigInt(c.missedBakingRewards) > 0 ||
+			BigInt(c.missedAttestationRewards) > 0,
 	);
 
 	if (completedCycles.length === 0) {
@@ -116,7 +126,9 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<p className="text-muted-foreground">No completed reward cycles yet</p>
+					<p className="text-muted-foreground">
+						No completed reward cycles yet
+					</p>
 				</CardContent>
 			</Card>
 		);
@@ -136,10 +148,12 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 	// Calculate stats (using only completed cycles)
 	const totalEarnedNum = Number(BigInt(data.totalEarned)) / 1_000_000;
 	const totalMissedNum = Number(BigInt(data.totalMissed)) / 1_000_000;
-	const avgPerCycle = completedCycles.length > 0 ? totalEarnedNum / completedCycles.length : 0;
-	const efficiency = (totalEarnedNum + totalMissedNum) > 0
-		? totalEarnedNum / (totalEarnedNum + totalMissedNum) * 100
-		: 100;
+	const avgPerCycle =
+		completedCycles.length > 0 ? totalEarnedNum / completedCycles.length : 0;
+	const efficiency =
+		totalEarnedNum + totalMissedNum > 0
+			? (totalEarnedNum / (totalEarnedNum + totalMissedNum)) * 100
+			: 100;
 
 	// Calculate trend (compare last 3 completed cycles avg vs previous cycles avg)
 	// Need at least 4 completed cycles to calculate a meaningful trend
@@ -147,8 +161,14 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 	if (completedCycles.length >= 4) {
 		const recentCycles = completedCycles.slice(0, 3);
 		const olderCycles = completedCycles.slice(3);
-		const recentAvg = recentCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) / recentCycles.length / 1_000_000;
-		const olderAvg = olderCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) / olderCycles.length / 1_000_000;
+		const recentAvg =
+			recentCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) /
+			recentCycles.length /
+			1_000_000;
+		const olderAvg =
+			olderCycles.reduce((sum, c) => sum + Number(BigInt(c.totalRewards)), 0) /
+			olderCycles.length /
+			1_000_000;
 		trendPercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
 	}
 
@@ -161,10 +181,14 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 							<TrendingUp className="h-5 w-5" />
 							Rewards History
 						</CardTitle>
-						<CardDescription>Last {completedCycles.length} cycles</CardDescription>
+						<CardDescription>
+							Last {completedCycles.length} cycles
+						</CardDescription>
 					</div>
 					<div className="text-right">
-						<p className="text-2xl font-bold">{formatXtzCompact(data.totalEarned)} XTZ</p>
+						<p className="text-2xl font-bold">
+							{formatXtzCompact(data.totalEarned)} XTZ
+						</p>
 						<p className="text-xs text-muted-foreground">total earned</p>
 					</div>
 				</div>
@@ -173,7 +197,9 @@ export function RewardsCard({ data, isLoading }: RewardsCardProps) {
 				{/* Stats row */}
 				<div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-muted/50 rounded-lg">
 					<div className="text-center">
-						<p className="text-lg font-semibold">{formatXtzCompact(avgPerCycle)} XTZ</p>
+						<p className="text-lg font-semibold">
+							{formatXtzCompact(avgPerCycle)} XTZ
+						</p>
 						<p className="text-xs text-muted-foreground">avg/cycle</p>
 					</div>
 					<div className="text-center">

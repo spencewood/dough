@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it } from "vitest";
-
 import { AlertsCard } from "@/components/dashboard/AlertsCard";
 import type { AlertsResponse } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 const mockAlertsResponse: AlertsResponse = {
 	alerts: [

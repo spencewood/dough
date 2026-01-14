@@ -1,8 +1,7 @@
-import { render, screen } from "@/tests/test-utils";
 import { describe, expect, it } from "vitest";
-
 import { NodeHealthCard } from "@/components/dashboard/NodeHealthCard";
 import type { NodeHealth } from "@/lib/types";
+import { render, screen } from "@/tests/test-utils";
 
 const mockNodeHealth: NodeHealth = {
 	isBootstrapped: true,
