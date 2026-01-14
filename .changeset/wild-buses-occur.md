@@ -1,5 +1,0 @@
----
-"dough": minor
----
-
-Initial release
