@@ -1,5 +1,11 @@
 # dough
 
+## 0.1.2
+
+### Patch Changes
+
+- ad9f5ea: Add favicon. Update rights logic.
+
 ## 0.1.1
 
 ### Patch Changes
