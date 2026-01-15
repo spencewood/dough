@@ -1,5 +1,11 @@
 # dough
 
+## 0.1.3
+
+### Patch Changes
+
+- dcd372c: Move time sensitive data to sockets
+
 ## 0.1.2
 
 ### Patch Changes
