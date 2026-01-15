@@ -157,16 +157,25 @@ export interface BlockInfo {
 	timestamp: string;
 }
 
+/** Cycle info from WebSocket stream */
+export interface CycleInfo {
+	currentCycle: number;
+	cyclePosition: number;
+	blocksPerCycle: number;
+}
+
 /** WebSocket message for block stream */
 export interface BlockStreamMessage {
 	type: "block";
 	block: BlockInfo;
+	cycle: CycleInfo;
 	serverTime: string;
 }
 
 /** Block stream state for UI */
 export interface BlockStreamState {
 	latestBlock: BlockInfo | null;
+	cycleInfo: CycleInfo | null;
 	serverDriftMs: number | null;
 	browserDriftMs: number | null;
 	isConnected: boolean;

@@ -13,6 +13,6 @@ export function useNetworkStats() {
 	return useQuery({
 		queryKey: ["network", "stats"],
 		queryFn: fetchNetworkStats,
-		refetchInterval: 5_000, // Poll every 5 seconds to catch new blocks
+		refetchInterval: 60_000, // Poll every 60s for protocol/chainId (block data comes via WebSocket)
 	});
 }

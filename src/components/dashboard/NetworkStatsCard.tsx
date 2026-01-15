@@ -8,7 +8,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { BlockInfo, NetworkStats } from "@/lib/types";
+import type { BlockInfo, CycleInfo, NetworkStats } from "@/lib/types";
 
 interface NetworkStatsCardProps {
 	data?: NetworkStats;
@@ -16,6 +16,7 @@ interface NetworkStatsCardProps {
 	// Block stream props
 	blockStream?: {
 		latestBlock: BlockInfo | null;
+		cycleInfo: CycleInfo | null;
 		serverDriftMs: number | null;
 		browserDriftMs: number | null;
 		isConnected: boolean;
@@ -52,10 +53,18 @@ export function NetworkStatsCard({
 	isLoading,
 	blockStream,
 }: NetworkStatsCardProps) {
-	// Use block stream data if available, otherwise fall back to polling data
+	// Use WebSocket data if available, otherwise fall back to polling data
 	const secondsSinceBlock = blockStream?.secondsSinceBlock ?? 0;
 	const isNewBlock = blockStream?.isNewBlock ?? false;
 	const headLevel = blockStream?.latestBlock?.level ?? data?.headLevel;
+
+	// Use WebSocket cycle info for real-time updates, fall back to polling data
+	const currentCycle =
+		blockStream?.cycleInfo?.currentCycle ?? data?.currentCycle ?? 0;
+	const cyclePosition =
+		blockStream?.cycleInfo?.cyclePosition ?? data?.cyclePosition ?? 0;
+	const blocksPerCycle =
+		blockStream?.cycleInfo?.blocksPerCycle ?? data?.blocksPerCycle ?? 1;
 
 	if (isLoading) {
 		return (
@@ -94,7 +103,7 @@ export function NetworkStatsCard({
 		);
 	}
 
-	const cycleProgress = (data.cyclePosition / data.blocksPerCycle) * 100;
+	const cycleProgress = (cyclePosition / blocksPerCycle) * 100;
 	const blockTimeSeconds = data.minimalBlockDelay || DEFAULT_BLOCK_TIME_SECONDS;
 	const blockProgress = Math.min(
 		(secondsSinceBlock / blockTimeSeconds) * 100,
@@ -209,7 +218,7 @@ export function NetworkStatsCard({
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-2 text-sm text-muted-foreground">
 								<Layers className="h-4 w-4" />
-								Cycle {data.currentCycle}
+								Cycle {currentCycle}
 							</div>
 							<span className="text-xs text-muted-foreground">
 								{cycleProgress.toFixed(1)}%
@@ -222,8 +231,8 @@ export function NetworkStatsCard({
 							/>
 						</div>
 						<p className="text-xs text-muted-foreground text-center">
-							{data.cyclePosition.toLocaleString()} /{" "}
-							{data.blocksPerCycle.toLocaleString()} blocks
+							{cyclePosition.toLocaleString()} /{" "}
+							{blocksPerCycle.toLocaleString()} blocks
 						</p>
 					</div>
 

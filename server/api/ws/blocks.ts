@@ -1,6 +1,40 @@
 import { defineWebSocketHandler } from "nitro/h3";
 import { config } from "@/lib/api/config";
-import type { BlockStreamMessage } from "@/lib/types";
+import type { BlockStreamMessage, CycleInfo } from "@/lib/types";
+
+// Cache for constants (blocks_per_cycle rarely changes)
+let cachedBlocksPerCycle: number | null = null;
+
+/** Fetch blocks per cycle from node (cached) */
+async function getBlocksPerCycle(): Promise<number> {
+	if (cachedBlocksPerCycle !== null) {
+		return cachedBlocksPerCycle;
+	}
+
+	const nodeUrl = config.nodeUrl;
+	const response = await fetch(
+		`${nodeUrl}/chains/main/blocks/head/context/constants`,
+	);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch constants: ${response.status}`);
+	}
+	const constants = (await response.json()) as { blocks_per_cycle: number };
+	cachedBlocksPerCycle = constants.blocks_per_cycle;
+	return cachedBlocksPerCycle;
+}
+
+/** Calculate cycle info from block level */
+async function getCycleInfo(level: number): Promise<CycleInfo> {
+	const blocksPerCycle = await getBlocksPerCycle();
+	const currentCycle = Math.floor(level / blocksPerCycle);
+	const cyclePosition = level % blocksPerCycle;
+
+	return {
+		currentCycle,
+		cyclePosition,
+		blocksPerCycle,
+	};
+}
 
 // Track connected WebSocket peers
 const peers = new Set<{
@@ -80,6 +114,9 @@ async function connectToTezosStream() {
 
 					console.log("[WS] New block:", block.level);
 
+					// Calculate cycle info from block level
+					const cycleInfo = await getCycleInfo(block.level);
+
 					// Broadcast to all connected peers
 					const message: BlockStreamMessage = {
 						type: "block",
@@ -88,6 +125,7 @@ async function connectToTezosStream() {
 							hash: block.hash,
 							timestamp: block.timestamp,
 						},
+						cycle: cycleInfo,
 						serverTime: new Date().toISOString(),
 					};
 

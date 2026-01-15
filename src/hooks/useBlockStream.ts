@@ -3,6 +3,7 @@ import type {
 	BlockInfo,
 	BlockStreamMessage,
 	BlockStreamState,
+	CycleInfo,
 } from "@/lib/types";
 
 const INITIAL_RECONNECT_DELAY = 1000;
@@ -16,6 +17,7 @@ export function useBlockStream(): BlockStreamState & {
 	isNewBlock: boolean;
 } {
 	const [latestBlock, setLatestBlock] = useState<BlockInfo | null>(null);
+	const [cycleInfo, setCycleInfo] = useState<CycleInfo | null>(null);
 	const [serverDriftMs, setServerDriftMs] = useState<number | null>(null);
 	const [browserDriftMs, setBrowserDriftMs] = useState<number | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
@@ -68,8 +70,9 @@ export function useBlockStream(): BlockStreamState & {
 					setServerDriftMs(serverTime - blockTime);
 					setBrowserDriftMs(browserTime - blockTime);
 
-					// Update latest block
+					// Update latest block and cycle info
 					setLatestBlock(message.block);
+					setCycleInfo(message.cycle);
 
 					// Calculate initial seconds since block
 					const initialSeconds = Math.floor((browserTime - blockTime) / 1000);
@@ -82,6 +85,10 @@ export function useBlockStream(): BlockStreamState & {
 					console.log(
 						"[useBlockStream] Block",
 						message.block.level,
+						"cycle",
+						message.cycle.currentCycle,
+						"pos",
+						message.cycle.cyclePosition,
 						"age:",
 						initialSeconds,
 						"s",
@@ -158,6 +165,7 @@ export function useBlockStream(): BlockStreamState & {
 
 	return {
 		latestBlock,
+		cycleInfo,
 		serverDriftMs,
 		browserDriftMs,
 		isConnected,
