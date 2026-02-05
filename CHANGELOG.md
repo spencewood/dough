@@ -1,5 +1,11 @@
 # dough
 
+## 0.2.0
+
+### Minor Changes
+
+- 872c9c4: refactor for newest start app. Fix upcoming rights.
+
 ## 0.1.3
 
 ### Patch Changes
