@@ -1,14 +1,11 @@
-import Fastify, {
-	type FastifyReply,
-	type FastifyRequest,
-} from "fastify";
-import fastifyStatic from "@fastify/static";
-import fastifyWebsocket from "@fastify/websocket";
-import type { WebSocket } from "ws";
-import { toNodeHandler } from "srvx/node";
-import type { NodeHttp1Handler } from "srvx";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import fastifyStatic from "@fastify/static";
+import fastifyWebsocket from "@fastify/websocket";
+import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
+import type { NodeHttp1Handler } from "srvx";
+import { toNodeHandler } from "srvx/node";
+import type { WebSocket } from "ws";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEVELOPMENT = process.env.NODE_ENV === "development";
@@ -41,118 +38,129 @@ async function registerApiRoutes(
 
 	// Settings
 	fastify.get("/api/settings", async () => {
-		const { getSettings } = await loadModule<typeof import("./src/lib/db")>(
-			"./src/lib/db",
-		);
+		const { getSettings } =
+			await loadModule<typeof import("./src/lib/db")>("./src/lib/db");
 		return getSettings();
 	});
 
-	fastify.post("/api/settings", async (request: FastifyRequest, reply: FastifyReply) => {
-		const { saveSettings } = await loadModule<typeof import("./src/lib/db")>(
-			"./src/lib/db",
-		);
-		const input = request.body as {
-			nodeUrl: string;
-			dalNodeUrl?: string;
-			bakerAddress: string;
-			bakerAlias?: string;
-		};
+	fastify.post(
+		"/api/settings",
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { saveSettings } =
+				await loadModule<typeof import("./src/lib/db")>("./src/lib/db");
+			const input = request.body as {
+				nodeUrl: string;
+				dalNodeUrl?: string;
+				bakerAddress: string;
+				bakerAlias?: string;
+			};
 
-		if (!input || !input.nodeUrl || !input.bakerAddress) {
-			return reply
-				.status(400)
-				.send({ error: "nodeUrl and bakerAddress are required" });
-		}
+			if (!input || !input.nodeUrl || !input.bakerAddress) {
+				return reply
+					.status(400)
+					.send({ error: "nodeUrl and bakerAddress are required" });
+			}
 
-		return saveSettings({
-			nodeUrl: input.nodeUrl,
-			dalNodeUrl: input.dalNodeUrl,
-			bakerAddress: input.bakerAddress,
-			bakerAlias: input.bakerAlias,
-		});
-	});
+			return saveSettings({
+				nodeUrl: input.nodeUrl,
+				dalNodeUrl: input.dalNodeUrl,
+				bakerAddress: input.bakerAddress,
+				bakerAlias: input.bakerAlias,
+			});
+		},
+	);
 
 	// Baker routes
-	fastify.get("/api/baker/status", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getBakerStatus } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/baker/status",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getBakerStatus } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getBakerStatus();
-		} catch (error) {
-			fastify.log.error("Failed to get baker status:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error ? error.message : "Failed to fetch baker status",
-			});
-		}
-	});
+			try {
+				return await getBakerStatus();
+			} catch (error) {
+				fastify.log.error("Failed to get baker status:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch baker status",
+				});
+			}
+		},
+	);
 
-	fastify.get("/api/baker/participation", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getBakerParticipation } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/baker/participation",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getBakerParticipation } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getBakerParticipation();
-		} catch (error) {
-			fastify.log.error("Failed to get baker participation:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error
-						? error.message
-						: "Failed to fetch baker participation",
-			});
-		}
-	});
+			try {
+				return await getBakerParticipation();
+			} catch (error) {
+				fastify.log.error("Failed to get baker participation:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch baker participation",
+				});
+			}
+		},
+	);
 
-	fastify.get("/api/baker/rewards", async (request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getRewardsHistory } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/baker/rewards",
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getRewardsHistory } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		const query = request.query as { cycles?: string };
-		const cycles = Number.parseInt(query.cycles || "10", 10);
+			const query = request.query as { cycles?: string };
+			const cycles = Number.parseInt(query.cycles || "10", 10);
 
-		try {
-			return await getRewardsHistory(cycles);
-		} catch (error) {
-			fastify.log.error("Failed to get rewards history:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error
-						? error.message
-						: "Failed to fetch rewards history",
-			});
-		}
-	});
+			try {
+				return await getRewardsHistory(cycles);
+			} catch (error) {
+				fastify.log.error("Failed to get rewards history:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch rewards history",
+				});
+			}
+		},
+	);
 
 	fastify.get("/api/baker/domain", async () => {
-		const { getSettings } = await loadModule<typeof import("./src/lib/db")>(
-			"./src/lib/db",
-		);
+		const { getSettings } =
+			await loadModule<typeof import("./src/lib/db")>("./src/lib/db");
 		const settings = getSettings();
 
 		if (!settings) {
@@ -199,129 +207,148 @@ async function registerApiRoutes(
 	});
 
 	// Rights routes
-	fastify.get("/api/baker/rights/baking", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getBakingRights } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/baker/rights/baking",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getBakingRights } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getBakingRights();
-		} catch (error) {
-			fastify.log.error("Failed to get baking rights:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error
-						? error.message
-						: "Failed to fetch baking rights",
-			});
-		}
-	});
+			try {
+				return await getBakingRights();
+			} catch (error) {
+				fastify.log.error("Failed to get baking rights:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch baking rights",
+				});
+			}
+		},
+	);
 
-	fastify.get("/api/baker/rights/attestation", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getAttestationRights } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/baker/rights/attestation",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getAttestationRights } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getAttestationRights();
-		} catch (error) {
-			fastify.log.error("Failed to get attestation rights:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error
-						? error.message
-						: "Failed to fetch attestation rights",
-			});
-		}
-	});
+			try {
+				return await getAttestationRights();
+			} catch (error) {
+				fastify.log.error("Failed to get attestation rights:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch attestation rights",
+				});
+			}
+		},
+	);
 
 	// Node routes
-	fastify.get("/api/node/health", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getNodeHealth } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/node/health",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getNodeHealth } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getNodeHealth();
-		} catch (error) {
-			fastify.log.error("Failed to get node health:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error ? error.message : "Failed to fetch node health",
-			});
-		}
-	});
+			try {
+				return await getNodeHealth();
+			} catch (error) {
+				fastify.log.error("Failed to get node health:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch node health",
+				});
+			}
+		},
+	);
 
 	// DAL routes
-	fastify.get("/api/dal/status", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getDalStatus } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/dal/status",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getDalStatus } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getDalStatus();
-		} catch (error) {
-			fastify.log.error("Failed to get DAL status:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error ? error.message : "Failed to fetch DAL status",
-			});
-		}
-	});
+			try {
+				return await getDalStatus();
+			} catch (error) {
+				fastify.log.error("Failed to get DAL status:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch DAL status",
+				});
+			}
+		},
+	);
 
 	// Network routes
-	fastify.get("/api/network/stats", async (_request: FastifyRequest, reply: FastifyReply) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
-		const { getNetworkStats } = await loadModule<
-			typeof import("./src/lib/api/octez")
-		>("./src/lib/api/octez");
+	fastify.get(
+		"/api/network/stats",
+		async (_request: FastifyRequest, reply: FastifyReply) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
+			const { getNetworkStats } = await loadModule<
+				typeof import("./src/lib/api/octez")
+			>("./src/lib/api/octez");
 
-		if (!config.isConfigured) {
-			return reply.status(503).send({ error: "Not configured" });
-		}
+			if (!config.isConfigured) {
+				return reply.status(503).send({ error: "Not configured" });
+			}
 
-		try {
-			return await getNetworkStats();
-		} catch (error) {
-			fastify.log.error("Failed to get network stats:", error);
-			return reply.status(502).send({
-				error:
-					error instanceof Error
-						? error.message
-						: "Failed to fetch network stats",
-			});
-		}
-	});
+			try {
+				return await getNetworkStats();
+			} catch (error) {
+				fastify.log.error("Failed to get network stats:", error);
+				return reply.status(502).send({
+					error:
+						error instanceof Error
+							? error.message
+							: "Failed to fetch network stats",
+				});
+			}
+		},
+	);
 
 	// Alerts
 	fastify.get("/api/alerts", async () => {
@@ -345,115 +372,124 @@ async function registerApiRoutes(
 	});
 
 	// WebSocket for block stream
-	fastify.get("/api/ws/blocks", { websocket: true }, async (socket: WebSocket) => {
-		const { config } = await loadModule<typeof import("./src/lib/api/config")>(
-			"./src/lib/api/config",
-		);
+	fastify.get(
+		"/api/ws/blocks",
+		{ websocket: true },
+		async (socket: WebSocket) => {
+			const { config } = await loadModule<
+				typeof import("./src/lib/api/config")
+			>("./src/lib/api/config");
 
-		const nodeUrl = config.nodeUrl;
-		if (!nodeUrl) {
-			socket.close(1008, "No node URL configured");
-			return;
-		}
+			const nodeUrl = config.nodeUrl;
+			if (!nodeUrl) {
+				socket.close(1008, "No node URL configured");
+				return;
+			}
 
-		let cachedBlocksPerCycle: number | null = null;
-		let abortController: AbortController | null = null;
-		let lastBlockLevel: number | null = null;
+			let cachedBlocksPerCycle: number | null = null;
+			let abortController: AbortController | null = null;
+			let lastBlockLevel: number | null = null;
 
-		async function getBlocksPerCycle(): Promise<number> {
-			if (cachedBlocksPerCycle !== null) return cachedBlocksPerCycle;
+			async function getBlocksPerCycle(): Promise<number> {
+				if (cachedBlocksPerCycle !== null) return cachedBlocksPerCycle;
 
-			const response = await fetch(
-				`${nodeUrl}/chains/main/blocks/head/context/constants`,
-			);
-			if (!response.ok) throw new Error(`Failed to fetch constants`);
-			const constants = (await response.json()) as { blocks_per_cycle: number };
-			cachedBlocksPerCycle = constants.blocks_per_cycle;
-			return cachedBlocksPerCycle;
-		}
+				const response = await fetch(
+					`${nodeUrl}/chains/main/blocks/head/context/constants`,
+				);
+				if (!response.ok) throw new Error(`Failed to fetch constants`);
+				const constants = (await response.json()) as {
+					blocks_per_cycle: number;
+				};
+				cachedBlocksPerCycle = constants.blocks_per_cycle;
+				return cachedBlocksPerCycle;
+			}
 
-		async function getCycleInfo(level: number) {
-			const blocksPerCycle = await getBlocksPerCycle();
-			return {
-				currentCycle: Math.floor(level / blocksPerCycle),
-				cyclePosition: level % blocksPerCycle,
-				blocksPerCycle,
-			};
-		}
+			async function getCycleInfo(level: number) {
+				const blocksPerCycle = await getBlocksPerCycle();
+				return {
+					currentCycle: Math.floor(level / blocksPerCycle),
+					cyclePosition: level % blocksPerCycle,
+					blocksPerCycle,
+				};
+			}
 
-		async function connectToTezosStream() {
-			abortController = new AbortController();
-			const url = `${nodeUrl}/monitor/heads/main`;
+			async function connectToTezosStream() {
+				abortController = new AbortController();
+				const url = `${nodeUrl}/monitor/heads/main`;
 
-			try {
-				const response = await fetch(url, { signal: abortController.signal });
-				if (!response.ok) throw new Error(`Failed to connect: ${response.status}`);
+				try {
+					const response = await fetch(url, { signal: abortController.signal });
+					if (!response.ok)
+						throw new Error(`Failed to connect: ${response.status}`);
 
-				const reader = response.body?.getReader();
-				if (!reader) throw new Error("No response body");
+					const reader = response.body?.getReader();
+					if (!reader) throw new Error("No response body");
 
-				const decoder = new TextDecoder();
-				let buffer = "";
+					const decoder = new TextDecoder();
+					let buffer = "";
 
-				while (true) {
-					const { done, value } = await reader.read();
-					if (done) break;
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) break;
 
-					buffer += decoder.decode(value, { stream: true });
-					const lines = buffer.split("\n");
-					buffer = lines.pop() || "";
+						buffer += decoder.decode(value, { stream: true });
+						const lines = buffer.split("\n");
+						buffer = lines.pop() || "";
 
-					for (const line of lines) {
-						const trimmed = line.trim();
-						if (!trimmed) continue;
+						for (const line of lines) {
+							const trimmed = line.trim();
+							if (!trimmed) continue;
 
-						try {
-							const block = JSON.parse(trimmed) as {
-								level: number;
-								hash: string;
-								timestamp: string;
-							};
+							try {
+								const block = JSON.parse(trimmed) as {
+									level: number;
+									hash: string;
+									timestamp: string;
+								};
 
-							if (lastBlockLevel === block.level) continue;
-							lastBlockLevel = block.level;
+								if (lastBlockLevel === block.level) continue;
+								lastBlockLevel = block.level;
 
-							const cycleInfo = await getCycleInfo(block.level);
-							const message = JSON.stringify({
-								type: "block",
-								block: {
-									level: block.level,
-									hash: block.hash,
-									timestamp: block.timestamp,
-								},
-								cycle: cycleInfo,
-								serverTime: new Date().toISOString(),
-							});
+								const cycleInfo = await getCycleInfo(block.level);
+								const message = JSON.stringify({
+									type: "block",
+									block: {
+										level: block.level,
+										hash: block.hash,
+										timestamp: block.timestamp,
+									},
+									cycle: cycleInfo,
+									serverTime: new Date().toISOString(),
+								});
 
-							socket.send(message);
-						} catch {
-							// Ignore parse errors
+								socket.send(message);
+							} catch {
+								// Ignore parse errors
+							}
 						}
 					}
-				}
-			} catch (err) {
-				if ((err as Error).name !== "AbortError") {
-					fastify.log.error("Tezos stream error:", err);
+				} catch (err) {
+					if ((err as Error).name !== "AbortError") {
+						fastify.log.error("Tezos stream error:", err);
+					}
 				}
 			}
-		}
 
-		// Start streaming
-		connectToTezosStream();
+			// Start streaming
+			connectToTezosStream();
 
-		// Handle close
-		socket.on("close", () => {
-			abortController?.abort();
-		});
-	});
+			// Handle close
+			socket.on("close", () => {
+				abortController?.abort();
+			});
+		},
+	);
 }
 
 // Development or Production setup
-let viteDevServer: Awaited<ReturnType<typeof import("vite").createServer>> | undefined;
+let viteDevServer:
+	| Awaited<ReturnType<typeof import("vite").createServer>>
+	| undefined;
 
 if (DEVELOPMENT) {
 	viteDevServer = await import("vite").then((vite) =>
