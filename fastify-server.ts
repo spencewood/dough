@@ -508,6 +508,7 @@ if (!DEVELOPMENT) {
 		root: path.join(__dirname, "dist/client"),
 		prefix: "/",
 		decorateReply: false,
+		wildcard: false,
 	});
 }
 

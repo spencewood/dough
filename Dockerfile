@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Clean any stale build artifacts and build fresh
-RUN rm -rf .output .nitro .tanstack .vinxi && pnpm build
+RUN rm -rf dist .output .nitro .tanstack .vinxi && pnpm build
 
 # Production stage
 FROM node:22-alpine AS runner
@@ -33,8 +33,17 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 dough
 
-# Copy built application from builder
-COPY --from=builder /app/.output ./.output
+# Copy node_modules from builder (includes tsx and runtime deps)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+
+# Copy server entry point and source files
+COPY --from=builder /app/fastify-server.ts ./
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/package.json ./
 
 # Create data directory for SQLite database
 RUN mkdir -p /app/data && chown -R dough:nodejs /app/data
@@ -56,4 +65,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application
-CMD ["node", ".output/server/index.mjs"]
+CMD ["npx", "tsx", "fastify-server.ts"]
